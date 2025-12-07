@@ -6,8 +6,9 @@
 class ThemeLogger {
   constructor() {
     this.isDebug = this.checkDebugMode();
-    this.isProduction = !window.Shopify?.designMode && 
-                       !document.documentElement.classList.contains('shopify-design-mode');
+    this.isProduction =
+      !window.Shopify?.designMode &&
+      !document.documentElement.classList.contains('shopify-design-mode');
     this.logs = [];
     this.maxLogs = 100;
   }
@@ -20,10 +21,9 @@ class ThemeLogger {
     // Fallback to hardcoded values
     const DEBUG_PARAM = (window.CONFIG && window.CONFIG.DEBUG_PARAM) || 'debug';
     const DEBUG_STORAGE_KEY = (window.CONFIG && window.CONFIG.DEBUG_STORAGE_KEY) || 'theme-debug';
-    
+
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.has(DEBUG_PARAM) || 
-           localStorage.getItem(DEBUG_STORAGE_KEY) === 'true';
+    return urlParams.has(DEBUG_PARAM) || localStorage.getItem(DEBUG_STORAGE_KEY) === 'true';
   }
 
   /**
@@ -42,7 +42,7 @@ class ThemeLogger {
   error(message, ...args) {
     console.error(`[Theme Error] ${message}`, ...args);
     this.addToLogs('error', message, args);
-    
+
     // In production, could send to error tracking service
     if (this.isProduction) {
       this.reportError(message, args);
@@ -138,7 +138,9 @@ window.themeLogger = themeLogger;
 // CONFIG will be available globally after constants.js loads
 // Use fallback values for immediate access
 const getConfig = () => {
-  if (window.CONFIG) return window.CONFIG;
+  if (window.CONFIG) {
+    return window.CONFIG;
+  }
   return {
     DEBUG_PARAM: 'debug',
     DEBUG_STORAGE_KEY: 'theme-debug',
@@ -146,4 +148,3 @@ const getConfig = () => {
 };
 
 export default themeLogger;
-

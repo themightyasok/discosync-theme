@@ -3,8 +3,8 @@
  * Provides graceful error handling and fallback UI
  */
 
-import themeLogger from './logger.js';
 import { ERROR_MESSAGES } from './constants.js';
+import themeLogger from './logger.js';
 
 class ErrorBoundary {
   constructor(element, fallbackCallback) {
@@ -31,7 +31,7 @@ class ErrorBoundary {
   handleError(error, userMessage) {
     this.hasError = true;
     themeLogger.error(userMessage, error);
-    
+
     // Show fallback UI if element exists
     if (this.element && this.fallbackCallback) {
       this.fallbackCallback(this.element, error, userMessage);
@@ -42,7 +42,9 @@ class ErrorBoundary {
    * Show error state in element
    */
   showErrorState(message, details = null) {
-    if (!this.element) return;
+    if (!this.element) {
+      return;
+    }
 
     const errorHTML = `
       <div class="error-state" role="alert">
@@ -59,7 +61,9 @@ class ErrorBoundary {
    * Show fallback content
    */
   showFallback(fallbackHTML) {
-    if (!this.element) return;
+    if (!this.element) {
+      return;
+    }
     this.element.innerHTML = fallbackHTML;
   }
 
@@ -78,4 +82,3 @@ class ErrorBoundary {
 }
 
 export default ErrorBoundary;
-

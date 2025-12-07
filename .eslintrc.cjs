@@ -4,6 +4,9 @@ module.exports = {
     es2021: true,
     node: true,
   },
+  globals: {
+    StorefrontAPIClient: 'readonly',
+  },
   extends: [
     'eslint:recommended',
     'plugin:import/recommended',

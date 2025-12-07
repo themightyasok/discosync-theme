@@ -35,7 +35,7 @@ class ConfigValidator {
    */
   validateStorefrontToken() {
     const tokenMeta = document.querySelector('meta[name="shopify-storefront-api-token"]');
-    
+
     if (!tokenMeta) {
       this.errors.push({
         type: 'storefront_token_missing',
@@ -60,7 +60,7 @@ class ConfigValidator {
     // This is a client-side check - full validation would require API call
     // For now, just check if we can see metafield references in the DOM
     const metafieldReferences = document.querySelectorAll('[data-metafield], [class*="metafield"]');
-    
+
     if (metafieldReferences.length === 0) {
       this.warnings.push({
         type: 'metafields_not_detected',
@@ -94,10 +94,10 @@ class ConfigValidator {
   displayResults() {
     if (this.errors.length > 0) {
       themeLogger.error('Configuration validation failed:', this.errors);
-      
+
       // Show user-friendly message in console
       console.group('❌ Theme Configuration Errors');
-      this.errors.forEach(error => {
+      this.errors.forEach((error) => {
         console.error(`• ${error.type}: ${error.message}`);
       });
       console.groupEnd();
@@ -105,10 +105,10 @@ class ConfigValidator {
 
     if (this.warnings.length > 0) {
       themeLogger.warn('Configuration validation warnings:', this.warnings);
-      
+
       if (themeLogger.isDebug) {
         console.group('⚠️ Theme Configuration Warnings');
-        this.warnings.forEach(warning => {
+        this.warnings.forEach((warning) => {
           console.warn(`• ${warning.type}: ${warning.message}`);
         });
         console.groupEnd();
@@ -140,4 +140,3 @@ if (themeLogger.isDebug) {
 window.configValidator = configValidator;
 
 export default configValidator;
-

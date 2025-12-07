@@ -15,9 +15,10 @@ class WebVitalsMonitor {
       inp: null,
       ttfb: null,
     };
-    this.isEnabled = window.location.search.includes('perf=1') || 
-                     localStorage.getItem('theme-perf-monitoring') === 'true';
-    
+    this.isEnabled =
+      window.location.search.includes('perf=1') ||
+      localStorage.getItem('theme-perf-monitoring') === 'true';
+
     if (this.isEnabled && 'PerformanceObserver' in window) {
       this.init();
     }
@@ -26,16 +27,16 @@ class WebVitalsMonitor {
   init() {
     // Largest Contentful Paint (LCP)
     this.observeLCP();
-    
+
     // Cumulative Layout Shift (CLS)
     this.observeCLS();
-    
+
     // First Input Delay (FID) - deprecated, use INP instead
     this.observeFID();
-    
+
     // Interaction to Next Paint (INP) - modern replacement for FID
     this.observeINP();
-    
+
     // Time to First Byte (TTFB)
     this.measureTTFB();
   }
@@ -45,17 +46,17 @@ class WebVitalsMonitor {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        
+
         this.metrics.lcp = {
           value: lastEntry.renderTime || lastEntry.loadTime,
           element: lastEntry.element?.tagName || 'unknown',
           url: lastEntry.url || 'unknown',
         };
-        
+
         themeLogger.perf('LCP (Largest Contentful Paint)', this.metrics.lcp.value, {
           element: this.metrics.lcp.element,
         });
-        
+
         perfMonitor.recordMetric('webVitals', {
           metric: 'LCP',
           value: this.metrics.lcp.value,
@@ -72,7 +73,7 @@ class WebVitalsMonitor {
   observeCLS() {
     try {
       let clsValue = 0;
-      let clsEntries = [];
+      const clsEntries = [];
 
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
@@ -82,19 +83,19 @@ class WebVitalsMonitor {
             clsEntries.push(entry);
           }
         }
-        
+
         this.metrics.cls = {
           value: clsValue,
           entries: clsEntries.length,
         };
-        
+
         if (clsValue > 0.1) {
           themeLogger.warn('CLS (Cumulative Layout Shift) detected:', clsValue);
         }
       });
 
       observer.observe({ entryTypes: ['layout-shift'] });
-      
+
       // Report final CLS on page unload
       window.addEventListener('beforeunload', () => {
         perfMonitor.recordMetric('webVitals', {
@@ -116,7 +117,7 @@ class WebVitalsMonitor {
             value: entry.processingStart - entry.startTime,
             eventType: entry.name,
           };
-          
+
           perfMonitor.recordMetric('webVitals', {
             metric: 'FID',
             value: this.metrics.fid.value,
@@ -143,7 +144,7 @@ class WebVitalsMonitor {
           if (entry.entryType === 'event') {
             interactionCount++;
             const delay = entry.processingStart - entry.startTime;
-            
+
             if (delay > maxDelay) {
               maxDelay = delay;
               worstInteraction = {
@@ -154,7 +155,7 @@ class WebVitalsMonitor {
             }
           }
         }
-        
+
         // INP is the worst interaction delay
         this.metrics.inp = {
           value: maxDelay,
@@ -164,7 +165,7 @@ class WebVitalsMonitor {
       });
 
       observer.observe({ entryTypes: ['event'] });
-      
+
       // Report INP on page unload
       window.addEventListener('beforeunload', () => {
         if (maxDelay > 0) {
@@ -189,7 +190,7 @@ class WebVitalsMonitor {
           dns: navigation.domainLookupEnd - navigation.domainLookupStart,
           connection: navigation.connectEnd - navigation.connectStart,
         };
-        
+
         perfMonitor.recordMetric('webVitals', {
           metric: 'TTFB',
           value: this.metrics.ttfb.value,
@@ -219,35 +220,53 @@ class WebVitalsMonitor {
   }
 
   report() {
-    if (!this.isEnabled) return;
-    
+    if (!this.isEnabled) {
+      return;
+    }
+
     const report = this.getReport();
     console.group('📊 Core Web Vitals Report');
-    
+
     if (report.lcp) {
-      const status = report.lcp.value <= report.thresholds.lcp.good ? '✅' : 
-                     report.lcp.value <= report.thresholds.lcp.needsImprovement ? '⚠️' : '❌';
+      const status =
+        report.lcp.value <= report.thresholds.lcp.good
+          ? '✅'
+          : report.lcp.value <= report.thresholds.lcp.needsImprovement
+            ? '⚠️'
+            : '❌';
       console.log(`${status} LCP: ${report.lcp.value.toFixed(2)}ms (${report.lcp.element})`);
     }
-    
+
     if (report.cls) {
-      const status = report.cls.value <= report.thresholds.cls.good ? '✅' : 
-                     report.cls.value <= report.thresholds.cls.needsImprovement ? '⚠️' : '❌';
+      const status =
+        report.cls.value <= report.thresholds.cls.good
+          ? '✅'
+          : report.cls.value <= report.thresholds.cls.needsImprovement
+            ? '⚠️'
+            : '❌';
       console.log(`${status} CLS: ${report.cls.value.toFixed(3)}`);
     }
-    
+
     if (report.inp) {
-      const status = report.inp.value <= report.thresholds.inp.good ? '✅' : 
-                     report.inp.value <= report.thresholds.inp.needsImprovement ? '⚠️' : '❌';
+      const status =
+        report.inp.value <= report.thresholds.inp.good
+          ? '✅'
+          : report.inp.value <= report.thresholds.inp.needsImprovement
+            ? '⚠️'
+            : '❌';
       console.log(`${status} INP: ${report.inp.value.toFixed(2)}ms`);
     }
-    
+
     if (report.ttfb) {
-      const status = report.ttfb.value <= report.thresholds.ttfb.good ? '✅' : 
-                     report.ttfb.value <= report.thresholds.ttfb.needsImprovement ? '⚠️' : '❌';
+      const status =
+        report.ttfb.value <= report.thresholds.ttfb.good
+          ? '✅'
+          : report.ttfb.value <= report.thresholds.ttfb.needsImprovement
+            ? '⚠️'
+            : '❌';
       console.log(`${status} TTFB: ${report.ttfb.value.toFixed(2)}ms`);
     }
-    
+
     console.groupEnd();
   }
 }
@@ -264,4 +283,3 @@ window.addEventListener('beforeunload', () => {
 });
 
 export default webVitalsMonitor;
-

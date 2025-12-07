@@ -12,7 +12,7 @@ class StorefrontAPIClient {
     const shop = window.Shopify?.shop || '';
     this.endpoint = CONFIG.STOREFRONT_API_ENDPOINT(shop);
     this.token = this.getStorefrontToken();
-    
+
     if (!this.token) {
       themeLogger.error(ERROR_MESSAGES.STOREFRONT_TOKEN_MISSING);
     }
@@ -37,28 +37,32 @@ class StorefrontAPIClient {
       throw new Error(ERROR_MESSAGES.STOREFRONT_TOKEN_MISSING);
     }
 
-    return perfMonitor.measureAsync('Storefront API Query', async () => {
-      const response = await fetch(this.endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Shopify-Storefront-Access-Token': this.token
-        },
-        body: JSON.stringify({
-          query: graphqlQuery,
-          variables
-        })
-      });
+    return perfMonitor.measureAsync(
+      'Storefront API Query',
+      async () => {
+        const response = await fetch(this.endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Storefront-Access-Token': this.token,
+          },
+          body: JSON.stringify({
+            query: graphqlQuery,
+            variables,
+          }),
+        });
 
-      const result = await response.json();
-      
-      if (result.errors) {
-        themeLogger.error('GraphQL Errors:', result.errors);
-        throw new Error(result.errors[0].message);
-      }
+        const result = await response.json();
 
-      return result.data;
-    }, { queryName: variables.operationName || 'unknown' });
+        if (result.errors) {
+          themeLogger.error('GraphQL Errors:', result.errors);
+          throw new Error(result.errors[0].message);
+        }
+
+        return result.data;
+      },
+      { queryName: variables.operationName || 'unknown' }
+    );
   }
 
   /**
@@ -157,7 +161,7 @@ class StorefrontAPIClient {
       handle,
       filters,
       first: limit,
-      after: cursor || undefined
+      after: cursor || undefined,
     };
 
     return await this.query(query, variables);
@@ -255,12 +259,12 @@ class StorefrontAPIClient {
     const variables = {
       query,
       first: limit,
-      after: cursor || undefined
+      after: cursor || undefined,
     };
 
     const data = await this.query(graphqlQuery, variables);
     return {
-      products: data.products
+      products: data.products,
     };
   }
 
@@ -274,7 +278,7 @@ class StorefrontAPIClient {
     // Product Type filter (can be array)
     if (params.productType) {
       const types = Array.isArray(params.productType) ? params.productType : [params.productType];
-      types.forEach(type => {
+      types.forEach((type) => {
         filters.push({ productType: type });
       });
     }
@@ -284,51 +288,55 @@ class StorefrontAPIClient {
       filters.push({
         price: {
           min: params.priceMin ? parseFloat(params.priceMin) : undefined,
-          max: params.priceMax ? parseFloat(params.priceMax) : undefined
-        }
+          max: params.priceMax ? parseFloat(params.priceMax) : undefined,
+        },
       });
     }
 
     // Style/Genre filter - can be metafield or variant option, check both
     if (params.styleGenre) {
       const genres = Array.isArray(params.styleGenre) ? params.styleGenre : [params.styleGenre];
-      genres.forEach(genre => {
+      genres.forEach((genre) => {
         // Try as product metafield first (most likely)
         filters.push({
           productMetafield: {
             namespace: 'custom',
             key: 'computed_style_genre',
-            value: genre
-          }
+            value: genre,
+          },
         });
-        // Note: If style_genre is actually a variant option in Shopify, 
+        // Note: If style_genre is actually a variant option in Shopify,
         // we'd need to use variantOption instead, but metafield is more common
       });
     }
 
     // Metafield filters - can be array
     if (params.mediaCondition) {
-      const conditions = Array.isArray(params.mediaCondition) ? params.mediaCondition : [params.mediaCondition];
-      conditions.forEach(condition => {
+      const conditions = Array.isArray(params.mediaCondition)
+        ? params.mediaCondition
+        : [params.mediaCondition];
+      conditions.forEach((condition) => {
         filters.push({
           productMetafield: {
             namespace: 'custom',
             key: 'media_condition',
-            value: condition
-          }
+            value: condition,
+          },
         });
       });
     }
 
     if (params.sleeveCondition) {
-      const conditions = Array.isArray(params.sleeveCondition) ? params.sleeveCondition : [params.sleeveCondition];
-      conditions.forEach(condition => {
+      const conditions = Array.isArray(params.sleeveCondition)
+        ? params.sleeveCondition
+        : [params.sleeveCondition];
+      conditions.forEach((condition) => {
         filters.push({
           productMetafield: {
             namespace: 'custom',
             key: 'sleeve_condition',
-            value: condition
-          }
+            value: condition,
+          },
         });
       });
     }
@@ -341,22 +349,24 @@ class StorefrontAPIClient {
    */
   parseURLFilters() {
     const params = new URLSearchParams(window.location.search);
-    
+
     // Debug: Log all filter parameters (will be logged to debug panel via CollectionGroupingEnhancer)
-    const allFilterParams = Array.from(params.entries()).filter(([key]) => key.startsWith('filter.'));
-    
+    const allFilterParams = Array.from(params.entries()).filter(([key]) =>
+      key.startsWith('filter.')
+    );
+
     const parseParam = (value) => {
       if (!value) {
         return null;
       }
       return value.includes(',') ? value.split(',') : value;
     };
-    
+
     // Use getAll() to get ALL values for parameters that can appear multiple times
     // This handles URLs like: ?filter.p.product_type=7"+Singles&filter.p.product_type=CD+Albums
     const getAllParam = (key) => {
       const allValues = params.getAll(key);
-      
+
       if (allValues.length === 0) {
         // Try URL-decoded version in case of encoding issues
         const decodedKey = decodeURIComponent(key);
@@ -365,7 +375,7 @@ class StorefrontAPIClient {
           if (decodedValues.length > 0) {
             // Use decoded values
             const combined = [];
-            decodedValues.forEach(val => {
+            decodedValues.forEach((val) => {
               if (val.includes(',')) {
                 combined.push(...val.split(','));
               } else {
@@ -377,7 +387,7 @@ class StorefrontAPIClient {
         }
         return null;
       }
-      
+
       if (allValues.length === 1) {
         // Single value - check if it's comma-separated
         return parseParam(allValues[0]);
@@ -385,7 +395,7 @@ class StorefrontAPIClient {
       // Multiple values - combine them (they're already separate, so just return array)
       // Also handle comma-separated values within each
       const combined = [];
-      allValues.forEach(val => {
+      allValues.forEach((val) => {
         if (val.includes(',')) {
           combined.push(...val.split(','));
         } else {
@@ -394,7 +404,7 @@ class StorefrontAPIClient {
       });
       return combined.length === 1 ? combined[0] : combined;
     };
-    
+
     // Helper to get a param with fallback to alternative format
     const getParamWithFallback = (primaryKey, fallbackKey) => {
       const primary = getAllParam(primaryKey);
@@ -409,7 +419,7 @@ class StorefrontAPIClient {
       }
       return null;
     };
-    
+
     const result = {
       productType: getAllParam('filter.p.product_type'),
       priceMin: params.get('filter.v.price.gte'),
@@ -417,18 +427,26 @@ class StorefrontAPIClient {
       // Style/Genre could be metafield or variant option - check both formats
       // Try metafield formats first, then variant option format
       styleGenre: (() => {
-        const metafield = getParamWithFallback('filter.p.m.custom.computed_style_genre', 'filter.p.m.custom.style_genre');
+        const metafield = getParamWithFallback(
+          'filter.p.m.custom.computed_style_genre',
+          'filter.p.m.custom.style_genre'
+        );
         if (metafield) {
           return metafield;
         }
         return getAllParam('filter.v.option.style_genre');
       })(),
       // Product metafields use filter.p.m.custom.* format, not filter.v.option.*
-      mediaCondition: getParamWithFallback('filter.p.m.custom.media_condition', 'filter.v.option.media_condition'),
-      sleeveCondition: getParamWithFallback('filter.p.m.custom.sleeve_condition', 'filter.v.option.sleeve_condition')
+      mediaCondition: getParamWithFallback(
+        'filter.p.m.custom.media_condition',
+        'filter.v.option.media_condition'
+      ),
+      sleeveCondition: getParamWithFallback(
+        'filter.p.m.custom.sleeve_condition',
+        'filter.v.option.sleeve_condition'
+      ),
     };
-    
-    
+
     return result;
   }
 
@@ -437,9 +455,9 @@ class StorefrontAPIClient {
    */
   updateURL(filterParams) {
     const url = new URL(window.location);
-    
+
     // Clear existing filter params
-    Array.from(url.searchParams.keys()).forEach(key => {
+    Array.from(url.searchParams.keys()).forEach((key) => {
       if (key.startsWith('filter.')) {
         url.searchParams.delete(key);
       }
@@ -447,8 +465,8 @@ class StorefrontAPIClient {
 
     // Add new filter params (handle arrays by joining with comma)
     if (filterParams.productType) {
-      const value = Array.isArray(filterParams.productType) 
-        ? filterParams.productType.join(',') 
+      const value = Array.isArray(filterParams.productType)
+        ? filterParams.productType.join(',')
         : filterParams.productType;
       url.searchParams.set('filter.p.product_type', value);
     }
@@ -459,23 +477,23 @@ class StorefrontAPIClient {
       url.searchParams.set('filter.v.price.lte', filterParams.priceMax);
     }
     if (filterParams.styleGenre) {
-      const value = Array.isArray(filterParams.styleGenre) 
-        ? filterParams.styleGenre.join(',') 
+      const value = Array.isArray(filterParams.styleGenre)
+        ? filterParams.styleGenre.join(',')
         : filterParams.styleGenre;
       // Try metafield format first (most common), fallback to variant option
       // Note: This should match what Shopify actually uses - may need adjustment
       url.searchParams.set('filter.p.m.custom.computed_style_genre', value);
     }
     if (filterParams.mediaCondition) {
-      const value = Array.isArray(filterParams.mediaCondition) 
-        ? filterParams.mediaCondition.join(',') 
+      const value = Array.isArray(filterParams.mediaCondition)
+        ? filterParams.mediaCondition.join(',')
         : filterParams.mediaCondition;
       // Product metafields use filter.p.m.custom.* format
       url.searchParams.set('filter.p.m.custom.media_condition', value);
     }
     if (filterParams.sleeveCondition) {
-      const value = Array.isArray(filterParams.sleeveCondition) 
-        ? filterParams.sleeveCondition.join(',') 
+      const value = Array.isArray(filterParams.sleeveCondition)
+        ? filterParams.sleeveCondition.join(',')
         : filterParams.sleeveCondition;
       // Product metafields use filter.p.m.custom.* format
       url.searchParams.set('filter.p.m.custom.sleeve_condition', value);
@@ -488,4 +506,3 @@ class StorefrontAPIClient {
 // Export for use in other modules and expose globally
 window.StorefrontAPIClient = StorefrontAPIClient;
 export default StorefrontAPIClient;
-

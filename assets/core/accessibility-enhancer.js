@@ -16,13 +16,13 @@ class AccessibilityEnhancer {
   init() {
     // Create ARIA live regions for dynamic content
     this.createLiveRegions();
-    
+
     // Enhance skip links
     this.enhanceSkipLinks();
-    
+
     // Keyboard navigation improvements
     this.setupKeyboardNavigation();
-    
+
     // Focus management for modals/drawers
     this.setupFocusManagement();
   }
@@ -45,7 +45,7 @@ class AccessibilityEnhancer {
       region.setAttribute('aria-atomic', config.atomic.toString());
       region.className = 'visually-hidden';
       region.setAttribute('aria-relevant', 'additions text');
-      
+
       document.body.appendChild(region);
       this.liveRegions.set(name, region);
     });
@@ -63,11 +63,11 @@ class AccessibilityEnhancer {
 
     // Clear previous message
     region.textContent = '';
-    
+
     // Small delay to ensure screen readers pick up the change
     setTimeout(() => {
       region.textContent = message;
-      
+
       // Clear after timeout (for log type)
       if (type === 'log' && timeout > 0) {
         setTimeout(() => {
@@ -82,16 +82,16 @@ class AccessibilityEnhancer {
    */
   enhanceSkipLinks() {
     const skipLinks = document.querySelectorAll('.skip-to-content-link, [href^="#"]');
-    skipLinks.forEach(link => {
+    skipLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
         const targetId = link.getAttribute('href').replace('#', '');
         const target = document.getElementById(targetId);
-        
+
         if (target) {
           e.preventDefault();
           target.setAttribute('tabindex', '-1');
           target.focus();
-          
+
           // Announce skip
           this.announce(`Skipped to ${target.getAttribute('aria-label') || targetId}`, 'status');
         }
@@ -108,7 +108,7 @@ class AccessibilityEnhancer {
       if (e.key === 'Tab') {
         this.handleFocusTrap(e);
       }
-      
+
       // Escape key handling
       if (e.key === 'Escape') {
         this.handleEscape(e);
@@ -124,10 +124,14 @@ class AccessibilityEnhancer {
    */
   handleFocusTrap(e) {
     const modal = document.querySelector('[role="dialog"], details-modal[open], cart-drawer[open]');
-    if (!modal) return;
+    if (!modal) {
+      return;
+    }
 
     const focusableElements = this.getFocusableElements(modal);
-    if (focusableElements.length === 0) return;
+    if (focusableElements.length === 0) {
+      return;
+    }
 
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
@@ -156,10 +160,11 @@ class AccessibilityEnhancer {
    * Get focusable elements
    */
   getFocusableElements(container) {
-    const selector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-    return Array.from(container.querySelectorAll(selector)).filter(el => {
-      return el.offsetParent !== null && !el.hasAttribute('hidden');
-    });
+    const selector =
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    return Array.from(container.querySelectorAll(selector)).filter(
+      (el) => el.offsetParent !== null && !el.hasAttribute('hidden')
+    );
   }
 
   /**
@@ -224,7 +229,7 @@ class AccessibilityEnhancer {
               this.saveFocus();
               this.focusFirstElement(node);
             }
-            
+
             // Announce new content
             const liveContent = node.querySelector('[data-aria-live]');
             if (liveContent) {
@@ -280,4 +285,3 @@ const accessibilityEnhancer = new AccessibilityEnhancer();
 window.accessibilityEnhancer = accessibilityEnhancer;
 
 export default accessibilityEnhancer;
-

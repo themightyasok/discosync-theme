@@ -5,16 +5,16 @@
  */
 
 // Import all core modules
+import accessibilityEnhancer from './accessibility-enhancer.js';
+import clsPrevention from './cls-prevention.js';
+import configValidator from './config-validator.js';
 import * as constants from './constants.js';
+import ErrorBoundary from './error-boundary.js';
+import inpOptimizer from './inp-optimizer.js';
 import themeLogger from './logger.js';
 import perfMonitor from './performance-monitor.js';
-import configValidator from './config-validator.js';
-import ErrorBoundary from './error-boundary.js';
-import webVitalsMonitor from './web-vitals.js';
-import accessibilityEnhancer from './accessibility-enhancer.js';
 import performanceReporter from './performance-reporter.js';
-import clsPrevention from './cls-prevention.js';
-import inpOptimizer from './inp-optimizer.js';
+import webVitalsMonitor from './web-vitals.js';
 
 // Re-export for bundling
 export {
@@ -51,4 +51,3 @@ if (typeof window !== 'undefined') {
   // INP optimizer
   window.inpOptimizer = inpOptimizer;
 }
-

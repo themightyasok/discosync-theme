@@ -13,8 +13,9 @@ class PerformanceMonitor {
       errors: [],
       interactions: [],
     };
-    this.isEnabled = window.location.search.includes('perf=1') || 
-                     localStorage.getItem('theme-perf-monitoring') === 'true';
+    this.isEnabled =
+      window.location.search.includes('perf=1') ||
+      localStorage.getItem('theme-perf-monitoring') === 'true';
   }
 
   /**
@@ -29,7 +30,7 @@ class PerformanceMonitor {
     try {
       const result = await asyncFn();
       const duration = performance.now() - start;
-      
+
       this.recordMetric('apiCalls', {
         name,
         duration,
@@ -45,7 +46,7 @@ class PerformanceMonitor {
       return result;
     } catch (error) {
       const duration = performance.now() - start;
-      
+
       this.recordMetric('apiCalls', {
         name,
         duration,
@@ -64,7 +65,9 @@ class PerformanceMonitor {
    * Measure render operation
    */
   measureRender(component, itemCount, duration) {
-    if (!this.isEnabled) return;
+    if (!this.isEnabled) {
+      return;
+    }
 
     this.recordMetric('renderTimes', {
       component,
@@ -81,7 +84,9 @@ class PerformanceMonitor {
    * Record user interaction
    */
   recordInteraction(type, target, metadata = {}) {
-    if (!this.isEnabled) return;
+    if (!this.isEnabled) {
+      return;
+    }
 
     this.recordMetric('interactions', {
       type,
@@ -140,22 +145,26 @@ class PerformanceMonitor {
       },
       apiPerformance: {
         total: apiCalls.reduce((sum, m) => sum + m.duration, 0),
-        average: apiCalls.length > 0 
-          ? apiCalls.reduce((sum, m) => sum + m.duration, 0) / apiCalls.length 
-          : 0,
-        slowest: apiCalls.length > 0
-          ? apiCalls.reduce((max, m) => m.duration > max.duration ? m : max, apiCalls[0])
-          : null,
-        failed: apiCalls.filter(m => !m.success).length,
+        average:
+          apiCalls.length > 0
+            ? apiCalls.reduce((sum, m) => sum + m.duration, 0) / apiCalls.length
+            : 0,
+        slowest:
+          apiCalls.length > 0
+            ? apiCalls.reduce((max, m) => (m.duration > max.duration ? m : max), apiCalls[0])
+            : null,
+        failed: apiCalls.filter((m) => !m.success).length,
       },
       renderPerformance: {
         total: renderTimes.reduce((sum, m) => sum + m.duration, 0),
-        average: renderTimes.length > 0
-          ? renderTimes.reduce((sum, m) => sum + m.duration, 0) / renderTimes.length
-          : 0,
-        averageItemsPerSecond: renderTimes.length > 0
-          ? renderTimes.reduce((sum, m) => sum + m.itemsPerSecond, 0) / renderTimes.length
-          : 0,
+        average:
+          renderTimes.length > 0
+            ? renderTimes.reduce((sum, m) => sum + m.duration, 0) / renderTimes.length
+            : 0,
+        averageItemsPerSecond:
+          renderTimes.length > 0
+            ? renderTimes.reduce((sum, m) => sum + m.itemsPerSecond, 0) / renderTimes.length
+            : 0,
       },
       recentErrors: this.metrics.errors.slice(-10),
     };
@@ -213,4 +222,3 @@ window.addEventListener('beforeunload', () => {
 });
 
 export default perfMonitor;
-

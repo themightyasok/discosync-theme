@@ -2,22 +2,32 @@
 
 if (!customElements.get('predictive-search')) {
   class PredictiveSearch extends HTMLElement {
-  constructor() {
-    super();
-    this.cachedResults = {};
-    // Support both Dawn modal structure and enhanced inline structure
-    this.input = this.querySelector('.js-search-input') || this.querySelector('.search__input.field__input') || this.querySelector('input[type="search"]');
-    this.productTypeSelect = this.querySelector('.js-search-product-types');
-    this.productTypeInput = document.getElementById('product_type_input');
-    this.resetBtn = this.querySelector('.js-search-reset') || this.querySelector('.reset__button');
-    // Support both structures for results container
-    this.results = this.querySelector('.js-search-results') || this.querySelector('.predictive-search.predictive-search--header') || this.querySelector('[data-predictive-search]');
-    this.overlay = this.querySelector('.js-search-overlay') || this.closest('details-modal')?.querySelector('.modal-overlay');
-    this.statusEl = this.querySelector('.js-search-status') || this.querySelector('.predictive-search-status');
-    this.loadingText = this.getAttribute('data-loading-text');
-    this.isModalMode = this.closest('details-modal') !== null;
-    this.addListeners();
-  }
+    constructor() {
+      super();
+      this.cachedResults = {};
+      // Support both Dawn modal structure and enhanced inline structure
+      this.input =
+        this.querySelector('.js-search-input') ||
+        this.querySelector('.search__input.field__input') ||
+        this.querySelector('input[type="search"]');
+      this.productTypeSelect = this.querySelector('.js-search-product-types');
+      this.productTypeInput = document.getElementById('product_type_input');
+      this.resetBtn =
+        this.querySelector('.js-search-reset') || this.querySelector('.reset__button');
+      // Support both structures for results container
+      this.results =
+        this.querySelector('.js-search-results') ||
+        this.querySelector('.predictive-search.predictive-search--header') ||
+        this.querySelector('[data-predictive-search]');
+      this.overlay =
+        this.querySelector('.js-search-overlay') ||
+        this.closest('details-modal')?.querySelector('.modal-overlay');
+      this.statusEl =
+        this.querySelector('.js-search-status') || this.querySelector('.predictive-search-status');
+      this.loadingText = this.getAttribute('data-loading-text');
+      this.isModalMode = this.closest('details-modal') !== null;
+      this.addListeners();
+    }
 
     /**
      * Triggers when the web component is removed from the DOMsss
@@ -39,7 +49,7 @@ if (!customElements.get('predictive-search')) {
             // Find option by iterating through options (more reliable than CSS selector with special chars)
             const options = this.productTypeSelect.querySelectorAll('.js-option');
             let savedOption = null;
-            options.forEach(option => {
+            options.forEach((option) => {
               if (option.dataset.value === savedProductType) {
                 savedOption = option;
               }
@@ -68,8 +78,8 @@ if (!customElements.get('predictive-search')) {
      */
     handleSubmit(evt) {
       if (
-        !this.getQuery().length
-        || this.querySelector('.predictive-search__item[aria-selected="true"]:not(.js-submit)')
+        !this.getQuery().length ||
+        this.querySelector('.predictive-search__item[aria-selected="true"]:not(.js-submit)')
       ) {
         evt.preventDefault();
       }
@@ -111,7 +121,9 @@ if (!customElements.get('predictive-search')) {
      */
     handleFocus() {
       const searchTerm = this.getQuery();
-      if (!searchTerm.length) return;
+      if (!searchTerm.length) {
+        return;
+      }
 
       if (this.getAttribute('results') === 'true') {
         this.open();
@@ -126,7 +138,9 @@ if (!customElements.get('predictive-search')) {
      */
     handleKeydown(evt) {
       // Let tabs script handle keydown events on the tab buttons.
-      if (evt.target.matches('.tablist__tab')) return;
+      if (evt.target.matches('.tablist__tab')) {
+        return;
+      }
 
       switch (evt.key) {
         case 'ArrowUp':
@@ -155,7 +169,9 @@ if (!customElements.get('predictive-search')) {
      */
     handleKeyup() {
       // If search field is empty after key press, close the results.
-      if (!this.getQuery().length) this.close();
+      if (!this.getQuery().length) {
+        this.close();
+      }
     }
 
     /**
@@ -172,7 +188,9 @@ if (!customElements.get('predictive-search')) {
       let resultToSelect = allResults[0];
 
       if (key === 'ArrowUp') {
-        if (!selectedResult) return;
+        if (!selectedResult) {
+          return;
+        }
 
         // Select the next result up or the last one if we've reached the top of the list.
         resultToSelect = selectedResult.previousElementSibling || allResults[allResults.length - 1];
@@ -187,10 +205,14 @@ if (!customElements.get('predictive-search')) {
 
       if (resultToSelect) {
         // If the selected item didn't change, do nothing.
-        if (resultToSelect === selectedResult) return;
+        if (resultToSelect === selectedResult) {
+          return;
+        }
 
         resultToSelect.setAttribute('aria-selected', 'true');
-        if (selectedResult) selectedResult.setAttribute('aria-selected', 'false');
+        if (selectedResult) {
+          selectedResult.setAttribute('aria-selected', 'false');
+        }
 
         this.setLiveRegionText(resultToSelect.textContent);
         this.input.setAttribute('aria-activedescendant', resultToSelect.id);
@@ -202,7 +224,9 @@ if (!customElements.get('predictive-search')) {
      */
     selectOption() {
       const selectedResult = this.querySelector('[aria-selected="true"] > .js-search-link');
-      if (selectedResult) selectedResult.click();
+      if (selectedResult) {
+        selectedResult.click();
+      }
     }
 
     /**
@@ -214,13 +238,24 @@ if (!customElements.get('predictive-search')) {
 
       let searchFields = 'title,product_type,variants.title,vendor';
       // Check for theme settings with fallbacks
-      const pSearchIncludeSkus = (window.theme && window.theme.settings && window.theme.settings.pSearchIncludeSkus) || false;
-      const pSearchIncludeTags = (window.theme && window.theme.settings && window.theme.settings.pSearchIncludeTags) || false;
-      const pSearchLimit = (window.theme && window.theme.settings && window.theme.settings.pSearchLimit) || 4;
-      const pSearchLimitScope = (window.theme && window.theme.settings && window.theme.settings.pSearchLimitScope) || 'each';
-      
-      if (pSearchIncludeSkus) searchFields += ',variants.sku';
-      if (pSearchIncludeTags) searchFields += ',tag';
+      const pSearchIncludeSkus =
+        (window.theme && window.theme.settings && window.theme.settings.pSearchIncludeSkus) ||
+        false;
+      const pSearchIncludeTags =
+        (window.theme && window.theme.settings && window.theme.settings.pSearchIncludeTags) ||
+        false;
+      const pSearchLimit =
+        (window.theme && window.theme.settings && window.theme.settings.pSearchLimit) || 4;
+      const pSearchLimitScope =
+        (window.theme && window.theme.settings && window.theme.settings.pSearchLimitScope) ||
+        'each';
+
+      if (pSearchIncludeSkus) {
+        searchFields += ',variants.sku';
+      }
+      if (pSearchIncludeTags) {
+        searchFields += ',tag';
+      }
 
       let searchParams = '';
       if (this.productTypeInput && this.productTypeInput.value !== '') {
@@ -242,15 +277,18 @@ if (!customElements.get('predictive-search')) {
 
       try {
         // Use Dawn's routes object format
-        const predictiveSearchUrl = (window.routes && window.routes.predictive_search_url) || '/search/suggest';
+        const predictiveSearchUrl =
+          (window.routes && window.routes.predictive_search_url) || '/search/suggest';
         const response = await fetch(`${predictiveSearchUrl}?${searchParams}`);
-        if (!response.ok) throw new Error(response.status);
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
 
         const tmpl = document.createElement('template');
         tmpl.innerHTML = await response.text();
 
         const resultsEl = tmpl.content.querySelector('#shopify-section-predictive-search');
-        let resultsMarkup = resultsEl.innerHTML.replace(/psearch/g, this.input.id);
+        const resultsMarkup = resultsEl.innerHTML.replace(/psearch/g, this.input.id);
 
         this.cachedResults[queryKey] = resultsMarkup;
         this.renderResults(resultsMarkup);
@@ -337,7 +375,9 @@ if (!customElements.get('predictive-search')) {
 
       // Deselect the selected result (if there is one).
       const selected = this.querySelector('.predictive-search__item[aria-selected="true"]');
-      if (selected) selected.setAttribute('aria-selected', 'false');
+      if (selected) {
+        selected.setAttribute('aria-selected', 'false');
+      }
 
       this.removeAttribute('open');
       if (this.resetBtn) {

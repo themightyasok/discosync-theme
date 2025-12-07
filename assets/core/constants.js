@@ -7,22 +7,22 @@ export const CONFIG = {
   // Storefront API Configuration
   STOREFRONT_API_VERSION: '2025-01',
   STOREFRONT_API_ENDPOINT: (shop) => `https://${shop}/api/2025-01/graphql.json`,
-  
+
   // Product Grouping Limits
   MAX_PRODUCTS_PER_COLLECTION: 5000,
   BATCH_SIZE: 250,
   RENDER_BATCH_SIZE: 10,
-  
+
   // Performance Settings
   DEBOUNCE_DELAY: 300,
   FILTER_UPDATE_DELAY: 300,
   SEARCH_DEBOUNCE: 300,
-  
+
   // Debug Settings
   DEBUG_PARAM: 'debug',
   PERFORMANCE_PARAM: 'perf',
   DEBUG_STORAGE_KEY: 'theme-debug',
-  
+
   // API Configuration
   METAFIELD_NAMESPACE: 'custom',
   APP_API_ENDPOINT: '/api/metafields',
@@ -85,8 +85,10 @@ export const REQUIRED_METAFIELDS = [
 ];
 
 export const ERROR_MESSAGES = {
-  STOREFRONT_TOKEN_MISSING: 'Storefront API token not configured. Add <meta name="shopify-storefront-api-token" content="YOUR_TOKEN"> to theme.liquid. Get your token from: Shopify Admin > Apps > Develop apps > Storefront API',
-  API_CLIENT_MISSING: 'Storefront API client not available. Ensure storefront-api-client.js is loaded.',
+  STOREFRONT_TOKEN_MISSING:
+    'Storefront API token not configured. Add <meta name="shopify-storefront-api-token" content="YOUR_TOKEN"> to theme.liquid. Get your token from: Shopify Admin > Apps > Develop apps > Storefront API',
+  API_CLIENT_MISSING:
+    'Storefront API client not available. Ensure storefront-api-client.js is loaded.',
   COLLECTION_HANDLE_MISSING: 'Collection handle not found. Cannot group products.',
   PRODUCT_GRID_MISSING: 'Product grid element not found. Cannot render products.',
   FETCH_FAILED: 'Failed to fetch products. Please try again or refresh the page.',
@@ -131,4 +133,3 @@ if (typeof window !== 'undefined') {
     ERROR_MESSAGES,
   };
 }
-

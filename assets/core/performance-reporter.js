@@ -3,9 +3,9 @@
  * Reports performance metrics to analytics endpoint (if configured)
  */
 
+import themeLogger from './logger.js';
 import perfMonitor from './performance-monitor.js';
 import webVitalsMonitor from './web-vitals.js';
-import themeLogger from './logger.js';
 
 class PerformanceReporter {
   constructor() {
@@ -13,7 +13,7 @@ class PerformanceReporter {
     this.isEnabled = this.checkIfEnabled();
     this.sessionId = this.generateSessionId();
     this.pageLoadTime = Date.now();
-    
+
     if (this.isEnabled) {
       this.init();
     }
@@ -26,10 +26,12 @@ class PerformanceReporter {
       this.endpoint = analyticsEndpoint;
       return true;
     }
-    
+
     // Enable in debug mode
-    return window.location.search.includes('perf=1') || 
-           localStorage.getItem('theme-perf-reporting') === 'true';
+    return (
+      window.location.search.includes('perf=1') ||
+      localStorage.getItem('theme-perf-reporting') === 'true'
+    );
   }
 
   generateSessionId() {
@@ -57,7 +59,7 @@ class PerformanceReporter {
     const perfData = performance.getEntriesByType('navigation')[0];
     const paintMetrics = performance.getEntriesByType('paint');
     const resourceMetrics = performance.getEntriesByType('resource');
-    
+
     const webVitals = webVitalsMonitor.getReport();
     const perfReport = perfMonitor.getReport();
 
@@ -68,21 +70,25 @@ class PerformanceReporter {
       url: window.location.href,
       userAgent: navigator.userAgent,
       connection: this.getConnectionInfo(),
-      
+
       // Navigation Timing
-      navigation: perfData ? {
-        domContentLoaded: perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
-        loadComplete: perfData.loadEventEnd - perfData.loadEventStart,
-        domInteractive: perfData.domInteractive - perfData.domContentLoadedEventStart,
-        totalTime: perfData.loadEventEnd - perfData.fetchStart,
-      } : null,
-      
+      navigation: perfData
+        ? {
+            domContentLoaded:
+              perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
+            loadComplete: perfData.loadEventEnd - perfData.loadEventStart,
+            domInteractive: perfData.domInteractive - perfData.domContentLoadedEventStart,
+            totalTime: perfData.loadEventEnd - perfData.fetchStart,
+          }
+        : null,
+
       // Paint Timing
       paint: {
-        firstPaint: paintMetrics.find(m => m.name === 'first-paint')?.startTime || null,
-        firstContentfulPaint: paintMetrics.find(m => m.name === 'first-contentful-paint')?.startTime || null,
+        firstPaint: paintMetrics.find((m) => m.name === 'first-paint')?.startTime || null,
+        firstContentfulPaint:
+          paintMetrics.find((m) => m.name === 'first-contentful-paint')?.startTime || null,
       },
-      
+
       // Web Vitals
       webVitals: {
         lcp: webVitals.lcp,
@@ -90,10 +96,10 @@ class PerformanceReporter {
         inp: webVitals.inp,
         ttfb: webVitals.ttfb,
       },
-      
+
       // Custom Metrics
       custom: perfReport,
-      
+
       // Resource Metrics
       resources: this.summarizeResources(resourceMetrics),
     };
@@ -126,9 +132,9 @@ class PerformanceReporter {
       slowest: [],
     };
 
-    resources.forEach(resource => {
+    resources.forEach((resource) => {
       summary.totalSize += resource.transferSize || 0;
-      
+
       const type = resource.initiatorType || 'other';
       if (!summary.byType[type]) {
         summary.byType[type] = { count: 0, totalSize: 0, totalTime: 0 };
@@ -136,7 +142,7 @@ class PerformanceReporter {
       summary.byType[type].count++;
       summary.byType[type].totalSize += resource.transferSize || 0;
       summary.byType[type].totalTime += resource.duration || 0;
-      
+
       // Track slowest resources
       if (resource.duration > 1000) {
         summary.slowest.push({
@@ -159,11 +165,13 @@ class PerformanceReporter {
    * Report metrics
    */
   async report(isPeriodic = false) {
-    if (!this.isEnabled) return;
+    if (!this.isEnabled) {
+      return;
+    }
 
     try {
       const metrics = this.collectMetrics();
-      
+
       if (this.endpoint) {
         // Send to analytics endpoint
         await fetch(this.endpoint, {
@@ -182,16 +190,16 @@ class PerformanceReporter {
         if (themeLogger.isDebug || !isPeriodic) {
           themeLogger.debug('Performance Report:', metrics);
         }
-        
+
         // Store in localStorage for later retrieval
         const reports = JSON.parse(localStorage.getItem('theme-perf-reports') || '[]');
         reports.push(metrics);
-        
+
         // Keep only last 10 reports
         if (reports.length > 10) {
           reports.shift();
         }
-        
+
         localStorage.setItem('theme-perf-reports', JSON.stringify(reports));
       }
     } catch (error) {
@@ -219,4 +227,3 @@ const performanceReporter = new PerformanceReporter();
 window.performanceReporter = performanceReporter;
 
 export default performanceReporter;
-
