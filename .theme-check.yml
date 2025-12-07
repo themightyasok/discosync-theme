@@ -5,9 +5,7 @@ extends:
   - :theme
   - :theme_app_extensions
 
-# Enable all recommended checks
-enable:
-  - LiquidTag
+# Enable all recommended checks (removed - using default extends instead)
 
 # Disable checks that might be too strict or false positives
 ignore:

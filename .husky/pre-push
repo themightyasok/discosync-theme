@@ -3,8 +3,8 @@ echo "🔍 Running pre-push validation..."
 # Run ESLint (warnings are acceptable, errors are not)
 npm run lint || exit 1
 
-# Theme-check is optional (has installation/path issues) - skip for now
-# npm run lint:liquid || exit 1
+# Run theme-check (Liquid validation)
+npm run lint:liquid || exit 1
 
 # Run custom validation
 node scripts/validate-pre-commit.js || exit 1
