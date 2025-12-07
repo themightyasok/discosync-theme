@@ -1,0 +1,40 @@
+/**
+ * Product Grouping Component Styles
+ */
+
+.collection-grouping-enhancer {
+  // Styles for grouping enhancer wrapper
+}
+
+.product-group {
+  // Styles for grouped products
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.product-group-header {
+  // Header showing group info (artist, album, format)
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.product-group-indicator {
+  // Indicator badge showing "Group of X"
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.js-grouping-hidden {
+  display: none !important;
+}
+
+// Loading state
+.grouping-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+

@@ -1,0 +1,355 @@
+{%- liquid
+  # ============================================================================
+  # Section Rendering API Handler for Product Group Cards
+  # ============================================================================
+  # This section is called via Section Rendering API to render product cards
+  # for both single products and grouped products. It handles product lookup
+  # by searching the collection (since all_products requires IDs, not handles).
+  #
+  # Flow:
+  # 1. JavaScript groups products client-side via Storefront API
+  # 2. JavaScript calls this section via Section Rendering API for each card
+  # 3. This section finds the product in the collection by handle
+  # 4. Renders product-group-card snippet with proper parameters
+  # ============================================================================
+  
+  # Get parameters from Section Rendering API
+  # CRITICAL: Section is fetched from collection page context (/collections/{handle}?section_id=...)
+  # This means the collection object is automatically available - no need to pass it as a parameter
+  
+  # Initialize all parameters
+  assign variant_handles_param = ''
+  assign group_formats_param = ''
+  assign show_compare_param = 'false'
+  assign product_handle = ''
+  assign product_id = ''
+  assign card_size_param = ''
+  assign product_title_param = ''
+  assign product_price_param = ''
+  assign product_image_param = ''
+  assign variant_count_param = ''
+  
+  # Parse ALL parameters from query_string
+  # CRITICAL: request.params may not work for custom query parameters when using Section Rendering API
+  # We parse query_string directly to get all parameters
+  # Note: Liquid automatically URL-decodes query string values
+  if request.query_string != blank
+    assign query_parts = request.query_string | split: '&'
+    
+    for part in query_parts
+      assign key_value = part | split: '='
+      if key_value.size >= 2
+        assign param_key = key_value[0]
+        assign param_value = key_value[1] | url_decode
+        
+        # Skip section_id parameter (used by endpoint)
+        if param_key != 'section_id'
+          if param_key == 'product_handle'
+            assign product_handle = param_value
+          elsif param_key == 'product_id'
+            assign product_id = param_value
+          elsif param_key == 'variant_handles'
+            assign variant_handles_param = param_value
+          elsif param_key == 'group_formats'
+            assign group_formats_param = param_value
+          elsif param_key == 'show_compare'
+            assign show_compare_param = param_value
+          elsif param_key == 'card_size'
+            assign card_size_param = param_value
+          elsif param_key == 'product_title'
+            assign product_title_param = param_value
+          elsif param_key == 'product_price'
+            assign product_price_param = param_value
+          elsif param_key == 'product_image'
+            assign product_image_param = param_value
+          elsif param_key == 'variant_count'
+            assign variant_count_param = param_value
+          endif
+        endif
+      endif
+    endfor
+  endif
+  
+  # Fallback: Try request.params (may work in some Shopify versions)
+  if product_handle == blank and request.params.product_handle != blank
+    assign product_handle = request.params.product_handle
+  endif
+  if product_id == blank and request.params.product_id != blank
+    assign product_id = request.params.product_id
+  endif
+  
+  # Find product using numeric ID first, then handle
+  # CRITICAL: all_products[numeric_id] may work beyond the 20-product handle limit
+  # The 20-product limit may only apply to handle lookups, not numeric ID lookups
+  # We try numeric ID first as it's the most direct method
+    assign main_product = null
+    
+  # Strategy 1: Try all_products[numeric_id] - may work for all products (not just 20)
+  if product_id != blank and product_id != ''
+      assign main_product = all_products[product_id]
+    endif
+    
+  # Strategy 2: If numeric ID lookup failed, try handle lookup (limited to 20 products)
+    if main_product == null and product_handle != blank
+      assign main_product = all_products[product_handle]
+    endif
+    
+  # Strategy 3: If both failed, search collection (limited to 50 products)
+  # This is a last resort - we need ALL products up to 5,000, not just 50
+  if main_product == null and product_handle != blank and collection != blank and collection.handle != blank
+    assign collection_handle = collection.handle
+    if collections[collection_handle] != blank
+      for coll_product in collections[collection_handle].products
+        if coll_product.handle == product_handle
+          assign main_product = coll_product
+          break
+        endif
+      endfor
+    endif
+  endif
+  
+  # Get card_size from URL parameter (passed from collection page)
+  # This ensures cards match the collection page's card_size setting
+  # Note: card_size_param may have been set from query_string parsing above
+  if card_size_param == blank or card_size_param == ''
+    assign card_size_param = request.params.card_size | default: ''
+    if card_size_param == blank or card_size_param == ''
+      assign card_size_param = section.settings.card_size
+    endif
+  endif
+  
+  # Get image_ratio from section settings (same as collection page uses)
+  assign image_ratio = section.settings.image_ratio | default: 'square'
+  
+  # Get show_compare from URL parameter
+  assign show_compare = false
+  if show_compare_param == 'true'
+    assign show_compare = true
+  endif
+-%}
+
+{%- comment -%}
+  Section Rendering API endpoint: /collections/{handle}?section_id=product-group-card-renderer
+  Parameters:
+  - product_handle: Product handle (required)
+  - variant_handles: Comma-separated variant handles (optional)
+  - group_formats: Comma-separated formats (optional)
+  - show_compare: 'true' or 'false' (optional)
+  - card_size: Card size setting (optional)
+  
+  Note: Collection object is automatically available from page context (no need to pass it)
+{%- endcomment -%}
+
+{%- comment -%}
+  IMPORTANT: Section Rendering API wraps this in <section> tag automatically.
+  We output just the <li> content so JavaScript can extract it.
+  The <li> must match EXACTLY what the collection page outputs.
+{%- endcomment -%}
+{%- if main_product -%}
+  {%- comment -%}Use product-group-card for BOTH singles and groups - it handles both!{%- endcomment -%}
+  <li class="js-pagination-result">
+    {% render 'product-group-card', 
+      main_product: main_product, 
+      variant_handles: variant_handles_param, 
+      group_formats: group_formats_param, 
+      image_ratio: image_ratio, 
+      show_compare: show_compare,
+      card_size: card_size_param,
+      collection: collection
+    %}
+  </li>
+{%- else -%}
+{%- comment -%}Product lookup failed - use passed product data from JavaScript{%- endcomment -%}
+{%- liquid
+  # Get product data passed from JavaScript via URL parameters
+  assign fallback_title = product_title_param | default: product_handle
+  assign fallback_price = product_price_param | default: '0.00'
+  assign fallback_image = product_image_param | default: ''
+  assign variant_count = variant_count_param | default: 0
+-%}
+<script>
+// Force debug output to popup console with copy to clipboard
+setTimeout(() => {
+  const debugData = {
+    raw_query_string: '{{ request.query_string }}',
+    query_parts_count: '{{ request.query_string | split: "&" | size }}',
+    product_handle: '{{ product_handle }}',
+    product_title_param: '{{ product_title_param }}',
+    product_price_param: '{{ product_price_param }}',
+    product_image_param: '{{ product_image_param }}',
+    variant_count_param: '{{ variant_count_param }}',
+    fallback_title: '{{ fallback_title }}',
+    fallback_price: '{{ fallback_price }}',
+    fallback_image: '{{ fallback_image }}',
+    variant_count: '{{ variant_count }}',
+    main_product_found: '{% if main_product %}true{% else %}false{% endif %}',
+    all_products_count: {{ all_products.size }},
+    collection_products_count: {{ collection.products.size }},
+    request_url: '{{ request.url }}',
+    request_path: '{{ request.path }}',
+    template: '{{ template }}',
+    section_id: '{{ section.id }}'
+  };
+  
+  // Add copy to clipboard functionality
+  const copyToClipboard = (text) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).catch(err => console.error('Failed to copy: ', err));
+    } else {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    }
+  };
+  
+  // Create enhanced debug log with copy button
+  const logWithCopy = (message, data) => {
+    const debugText = `${message}\n${JSON.stringify(data, null, 2)}`;
+    
+    // Try multiple ways to get to the debug function
+    if (window.MoreFromEnhancer && window.MoreFromEnhancer.prototype.debugLog) {
+      window.MoreFromEnhancer.prototype.debugLog(message, data);
+    } else if (window.CollectionGroupingEnhancer && window.CollectionGroupingEnhancer.prototype.debugLog) {
+      window.CollectionGroupingEnhancer.prototype.debugLog(message, data);
+    } else {
+      // Try to find any instance with debugLog
+      const instances = [window.moreFromEnhancer, window.collectionGroupingEnhancer];
+      let logged = false;
+      for (const instance of instances) {
+        if (instance && instance.debugLog) {
+          instance.debugLog(message, data);
+          logged = true;
+          break;
+        }
+      }
+      if (!logged) {
+        console.log(message, data);
+      }
+    }
+    
+    // Copy to clipboard
+    copyToClipboard(debugText);
+    
+    // Also add a copy button to the debug panel if it exists
+    setTimeout(() => {
+      const debugPanel = document.getElementById('debug-panel');
+      if (debugPanel) {
+        const copyBtn = document.createElement('button');
+        copyBtn.textContent = 'Copy Latest';
+        copyBtn.style.cssText = 'position: absolute; top: 5px; left: 5px; z-index: 1; background: #007acc; color: white; border: none; padding: 2px 6px; font-size: 10px; cursor: pointer;';
+        copyBtn.onclick = () => copyToClipboard(debugText);
+        debugPanel.style.position = 'relative';
+        debugPanel.appendChild(copyBtn);
+      }
+    }, 200);
+  };
+  
+  logWithCopy('🔵 LIQUID DEBUG DATA', debugData);
+  
+}, 100);
+</script>
+<script>
+// Try both MoreFromEnhancer and CollectionGroupingEnhancer debug methods
+if (window.MoreFromEnhancer && window.MoreFromEnhancer.prototype.debugLog) {
+  window.MoreFromEnhancer.prototype.debugLog('🔵 Liquid Debug', {
+    product_handle: '{{ product_handle }}',
+    product_title_param: '{{ product_title_param }}',
+    product_price_param: '{{ product_price_param }}',
+    product_image_param: '{{ product_image_param }}',
+    fallback_title: '{{ fallback_title }}',
+    fallback_price: '{{ fallback_price }}',
+    fallback_image: '{{ fallback_image }}',
+    variant_count: '{{ variant_count }}'
+  });
+} else if (window.CollectionGroupingEnhancer && window.CollectionGroupingEnhancer.prototype.debugLog) {
+  window.CollectionGroupingEnhancer.prototype.debugLog('🔵 Liquid Debug', {
+    product_handle: '{{ product_handle }}',
+    product_title_param: '{{ product_title_param }}',
+    product_price_param: '{{ product_price_param }}',
+    product_image_param: '{{ product_image_param }}',
+    fallback_title: '{{ fallback_title }}',
+    fallback_price: '{{ fallback_price }}',
+    fallback_image: '{{ fallback_image }}',
+    variant_count: '{{ variant_count }}'
+  });
+} else {
+  // Fallback to console if no debug method available
+  console.log('🔵 Liquid Debug', {
+    product_handle: '{{ product_handle }}',
+    product_title_param: '{{ product_title_param }}',
+    product_price_param: '{{ product_price_param }}',
+    product_image_param: '{{ product_image_param }}',
+    fallback_title: '{{ fallback_title }}',
+    fallback_price: '{{ fallback_price }}',
+    fallback_image: '{{ fallback_image }}',
+    variant_count: '{{ variant_count }}'
+  });
+}
+</script>
+<li class="js-pagination-result">
+  <div class="card card--product">
+    {%- if fallback_image != blank -%}
+    <div class="card__media">
+      <a href="/products/{{ product_handle }}" class="card__link">
+        <img src="{{ fallback_image }}" alt="{{ fallback_title }}" class="card__image" loading="lazy">
+      </a>
+    </div>
+    {%- endif -%}
+    
+    <div class="card__info">
+      <a href="/products/{{ product_handle }}" class="card__title">{{ fallback_title }}</a>
+      
+      {%- if fallback_price != '0.00' -%}
+      <div class="card__price">
+        <span class="price">£{{ fallback_price }}</span>
+      </div>
+      {%- endif -%}
+      
+      {%- if variant_count > 0 -%}
+      <div class="card__group-indicator">
+        +{{ variant_count }} more
+      </div>
+      {%- endif -%}
+    </div>
+  </div>
+</li>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product Group Card",
+  "tag": "section",
+  "class": "product-group-card-renderer",
+  "settings": [
+    {
+      "type": "select",
+      "id": "card_size",
+      "label": "Card size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "landscape", "label": "Landscape" }
+      ],
+      "default": "square"
+    }
+  ],
+  "presets": [
+    { "name": "Product Group Card" }
+  ]
+}
+{% endschema %}

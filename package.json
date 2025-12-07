@@ -1,0 +1,53 @@
+{
+  "name": "discosync-theme",
+  "version": "1.0.0",
+  "description": "DiscoSync Shopify theme with advanced product grouping and search",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:prod": "vite build --mode production",
+    "preview": "vite preview",
+    "watch": "vite build --watch",
+    "clean": "rm -rf assets/*-bundle.js assets/chunks assets/scss-*.css .vite",
+    "dist": "npm run build:prod && node scripts/create-dist-package.js",
+    "lint": "eslint assets/**/*.js --ext .js",
+    "lint:fix": "eslint assets/**/*.js --ext .js --fix",
+    "lint:liquid": "theme-check-node",
+    "lint:all": "npm run lint && npm run lint:liquid",
+    "format": "prettier --write \"**/*.{js,json,scss,liquid}\"",
+    "format:check": "prettier --check \"**/*.{js,json,scss,liquid}\"",
+    "prepare": "husky",
+    "validate:pre-commit": "node scripts/validate-pre-commit.js",
+    "validate": "npm run lint:all && npm run validate:pre-commit"
+  },
+  "keywords": [
+    "shopify",
+    "theme",
+    "music",
+    "vinyl",
+    "record-store"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.11.0",
+    "@shopify/theme-check-node": "^3.23.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.29.1",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.10",
+    "postcss": "^8.4.47",
+    "prettier": "^3.3.0",
+    "sass": "^1.90.0",
+    "terser": "^5.36.0",
+    "vite": "^5.4.0",
+    "vite-plugin-shopify": "^2.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

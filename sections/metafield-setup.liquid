@@ -1,0 +1,95 @@
+{%- comment -%}
+  Metafield Setup Section
+  
+  This section can be temporarily added to the theme to trigger
+  metafield creation via the app API when the theme is activated.
+  
+  Usage:
+  1. Add this section to a template (e.g., index.json)
+  2. Visit the page once to trigger metafield creation
+  3. Remove the section after metafields are created
+  
+  The section will automatically attempt to create all required
+  metafields via the app API if configured.
+{%- endcomment -%}
+
+<script>
+  (function() {
+    // Check if metafields have already been created (stored in localStorage)
+    const metafieldsCreated = localStorage.getItem('discosync_metafields_created');
+    if (metafieldsCreated === 'true') {
+      return; // Already created, skip
+    }
+
+    // App API configuration (should be set in theme settings or via meta tag)
+    const appApiUrl = document.querySelector('meta[name="discosync-api-url"]')?.content || '';
+    const storeId = document.querySelector('meta[name="discosync-store-id"]')?.content || '';
+    const apiKey = document.querySelector('meta[name="discosync-api-key"]')?.content || '';
+
+    if (!appApiUrl || !storeId || !apiKey) {
+      console.warn('DiscoSync: App API configuration not found. Metafields must be created manually or via app interface.');
+      return;
+    }
+
+        // Required metafields configuration (all 26 metafields)
+        const requiredMetafields = [
+          { namespace: 'custom', key: 'artist', name: 'Artist', type: 'single_line_text_field', description: 'The artist or performer name for music products. Used for grouping and search.', owner_type: 'product' },
+          { namespace: 'custom', key: 'title', name: 'Album Title', type: 'single_line_text_field', description: 'The album or release title. Used for grouping products with the same album.', owner_type: 'product' },
+          { namespace: 'custom', key: 'album', name: 'Album', type: 'single_line_text_field', description: 'Album name (alternative to title).', owner_type: 'product' },
+          { namespace: 'custom', key: 'format', name: 'Format', type: 'single_line_text_field', description: 'The physical format of the product (e.g., Vinyl LP, CD, Cassette). Used for grouping and filtering.', owner_type: 'product' },
+          { namespace: 'custom', key: 'computed_formats', name: 'Computed Formats', type: 'list.single_line_text_field', description: 'List of all available formats for this release.', owner_type: 'product' },
+          { namespace: 'custom', key: 'media_condition', name: 'Media Condition', type: 'single_line_text_field', description: 'The condition of the media/record itself (e.g., Mint, Near Mint, Very Good). Used for filtering.', owner_type: 'product' },
+          { namespace: 'custom', key: 'sleeve_condition', name: 'Sleeve Condition', type: 'single_line_text_field', description: 'The condition of the sleeve/cover (e.g., Mint, Near Mint, Very Good). Used for filtering.', owner_type: 'product' },
+          { namespace: 'custom', key: 'condition', name: 'Condition', type: 'single_line_text_field', description: 'General condition rating.', owner_type: 'product' },
+          { namespace: 'custom', key: 'media_rating', name: 'Media Rating', type: 'single_line_text_field', description: 'Media condition rating.', owner_type: 'variant' },
+          { namespace: 'custom', key: 'cover_rating', name: 'Cover Rating', type: 'single_line_text_field', description: 'Cover/sleeve condition rating.', owner_type: 'variant' },
+          { namespace: 'custom', key: 'style_genre', name: 'Style/Genre', type: 'single_line_text_field', description: 'The musical style or genre (legacy field).', owner_type: 'product' },
+          { namespace: 'custom', key: 'computed_style_genre', name: 'Computed Style/Genre', type: 'list.single_line_text_field', description: 'The musical style or genre (computed list). Used for filtering and search relevance.', owner_type: 'product' },
+          { namespace: 'custom', key: 'computed_master_label', name: 'Master Label', type: 'single_line_text_field', description: 'The record label name (primary). Used for More from sections and filtering.', owner_type: 'product' },
+          { namespace: 'custom', key: 'label', name: 'Label', type: 'single_line_text_field', description: 'Record label name (alternative field).', owner_type: 'product' },
+          { namespace: 'custom', key: 'computed_label', name: 'Computed Label', type: 'single_line_text_field', description: 'Computed label name.', owner_type: 'product' },
+          { namespace: 'custom', key: 'computed_other_labels', name: 'Computed Other Labels', type: 'list.single_line_text_field', description: 'List of other record labels associated with this release.', owner_type: 'product' },
+          { namespace: 'custom', key: 'computed_other_artists', name: 'Computed Other Artists', type: 'list.single_line_text_field', description: 'List of other artists featured on this release.', owner_type: 'product' },
+          { namespace: 'custom', key: 'released', name: 'Release Date', type: 'date', description: 'The release date of the album/release.', owner_type: 'product' },
+          { namespace: 'custom', key: 'computed_release_year', name: 'Computed Release Year', type: 'single_line_text_field', description: 'The release year (extracted from release date).', owner_type: 'product' },
+          { namespace: 'custom', key: 'catno', name: 'Catalog Number', type: 'single_line_text_field', description: 'Catalog number for the release.', owner_type: 'product' },
+          { namespace: 'custom', key: 'catalogue_number', name: 'Catalogue Number', type: 'single_line_text_field', description: 'Catalogue number (alternative to catno).', owner_type: 'product' },
+          { namespace: 'custom', key: 'collectibility_score', name: 'Collectibility Score', type: 'single_line_text_field', description: 'Collectibility or rarity score for the item.', owner_type: 'product' },
+          { namespace: 'custom', key: 'enhanced_keywords', name: 'Enhanced Keywords', type: 'single_line_text_field', description: 'Enhanced search keywords for improved discoverability.', owner_type: 'product' },
+          { namespace: 'custom', key: 'location', name: 'Location', type: 'single_line_text_field', description: 'Physical storage location (for store owner/staff use).', owner_type: 'product' },
+          { namespace: 'custom', key: 'has_360_view', name: 'Has 360 View', type: 'boolean', description: 'Whether the product has a 360-degree view available.', owner_type: 'product' },
+          { namespace: 'custom', key: 'tracklist', name: 'Tracklist', type: 'multi_line_text_field', description: 'Track listing for the album/release.', owner_type: 'product' }
+        ];
+
+    // Attempt to create metafields via app API
+    fetch(`${appApiUrl}/api/metafields/${storeId}/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        metafields: requiredMetafields
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log('DiscoSync: Metafields created successfully', data);
+        localStorage.setItem('discosync_metafields_created', 'true');
+        localStorage.setItem('discosync_metafields_job_id', data.data?.jobId || '');
+      } else {
+        console.warn('DiscoSync: Metafield creation returned:', data);
+      }
+    })
+    .catch(error => {
+      console.error('DiscoSync: Error creating metafields:', error);
+      console.info('DiscoSync: Please create metafields manually. See config/METAFIELDS_SETUP.md for instructions.');
+    });
+  })();
+</script>
+
+<div style="display: none;">
+  <p>Metafield setup script running. Check browser console for status.</p>
+</div>
+

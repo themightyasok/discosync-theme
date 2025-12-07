@@ -1,0 +1,322 @@
+# Cursor Rules for DiscoSync Theme
+
+This document defines rules and guidelines for AI assistants working on the DiscoSync Shopify theme codebase.
+
+## Project Overview
+
+DiscoSync is a Shopify theme based on Dawn, enhanced with:
+- Product grouping engine (groups by Artist + Album + Format)
+- Enhanced predictive search with tabs
+- Storefront API integration for large collections
+- Music-specific metafields and features
+
+## Code Structure
+
+### Key Directories
+
+- `assets/` - JavaScript and CSS files
+  - `storefront-api-client.js` - Storefront API GraphQL client
+  - `collection-grouping-enhancer.js` - Main product grouping engine
+  - `predictive-search.js` - Enhanced predictive search
+  - `more-from-enhancer.js` - "More from artist/label" sections
+  
+- `sections/` - Shopify theme sections (Liquid)
+  - `main-collection-product-grid.liquid` - Collection page with grouping
+  - `main-search.liquid` - Search results with grouping
+  - `product-group-card-renderer.liquid` - Section Rendering API endpoint
+  - `header.liquid` - Header with predictive search
+  
+- `snippets/` - Reusable Liquid snippets
+  - `product-group-card.liquid` - Product card with grouping indicators
+  - `predictive-search.liquid` - Predictive search form
+  - Helper snippets for rendering product data
+  
+- `config/` - Theme configuration
+  - `metafields.json` - All 26 required metafield definitions
+  - `settings_schema.json` - Theme settings
+  - `settings_data.json` - Default settings values
+
+- `layout/` - Theme layouts
+  - `theme.liquid` - Main layout with Storefront API token and metafield creation
+
+- `docs/` - Documentation
+  - `STOREFRONT_API_GROUPING_ENGINE.md` - Grouping engine documentation
+  - `METAFIELDS_SETUP.md` - Metafield setup guide
+
+## Coding Standards
+
+### JavaScript
+
+1. **Custom Elements**: Use Web Components (`class extends HTMLElement`)
+   - Example: `CollectionGroupingEnhancer`, `PredictiveSearch`, `StorefrontAPIClient`
+
+2. **Async/Await**: Prefer async/await over promises
+   ```javascript
+   async function fetchProducts() {
+     const data = await apiClient.getCollection(handle);
+     return data;
+   }
+   ```
+
+3. **Error Handling**: Always handle errors gracefully
+   ```javascript
+   try {
+     const result = await fetchData();
+   } catch (error) {
+     console.error('Error:', error);
+     // Fallback behavior
+   }
+   ```
+
+4. **Comments**: Document complex logic
+   ```javascript
+   /**
+    * Groups products by artist + album + format
+    * @param {Array} products - Array of product objects
+    * @returns {Map} - Map of group keys to product arrays
+    */
+   ```
+
+5. **Variable Naming**: Use descriptive camelCase names
+   - Good: `collectionHandle`, `productGroupMap`, `renderProgress`
+   - Bad: `ch`, `pgm`, `rp`
+
+### Liquid
+
+1. **Indentation**: Use 2 spaces
+2. **Liquid Tags**: Use `{%- -%}` for no whitespace when needed
+3. **Comments**: Use `{%- comment -%}` blocks for documentation
+4. **Escaping**: Always escape user input with `| escape`
+5. **Conditional Rendering**: Check for blank values before rendering
+   ```liquid
+   {%- if product.metafields.custom.artist.value -%}
+     {{ product.metafields.custom.artist.value | escape }}
+   {%- endif -%}
+   ```
+
+### Metafields
+
+1. **Namespace**: Always use `custom` namespace
+2. **Access Pattern**: `product.metafields.custom.key.value`
+3. **List Types**: Use `for...in` loops for list metafields
+   ```liquid
+   {%- for genre in product.metafields.custom.computed_style_genre.value -%}
+     {{ genre }}
+   {%- endfor -%}
+   ```
+4. **Type Validation**: Verify types match `config/metafields.json`
+
+### Storefront API
+
+1. **Token**: Always check token exists before making requests
+   ```javascript
+   if (!this.token) {
+     throw new Error('Storefront API token not configured');
+   }
+   ```
+
+2. **GraphQL Queries**: Include all required metafields
+   ```graphql
+   artist: metafield(namespace: "custom", key: "artist") {
+     value
+   }
+   ```
+
+3. **Pagination**: Always handle pagination for large collections
+   ```javascript
+   while (hasNextPage) {
+     const data = await fetchPage(cursor);
+     cursor = data.pageInfo.endCursor;
+     hasNextPage = data.pageInfo.hasNextPage;
+   }
+   ```
+
+4. **Error Handling**: Handle GraphQL errors gracefully
+   ```javascript
+   if (result.errors) {
+     console.error('GraphQL Errors:', result.errors);
+     throw new Error(result.errors[0].message);
+   }
+   ```
+
+## File Organization
+
+### When Adding New Features
+
+1. **JavaScript**: Add to `assets/` directory
+   - Custom elements should be in separate files
+   - Utility functions can be in `global.js` if theme-wide
+
+2. **Liquid Sections**: Add to `sections/` directory
+   - Use descriptive names ending in `.liquid`
+   - Include proper schema for theme editor
+
+3. **Snippets**: Add to `snippets/` directory
+   - Reusable components
+   - Document parameters in comments
+
+4. **Styles**: Add to `assets/` directory
+   - Separate CSS files for major features
+   - Use BEM naming convention where possible
+
+5. **Documentation**: Add to `docs/` directory
+   - Markdown files for feature documentation
+   - Keep documentation up to date
+
+## Important Patterns
+
+### Product Grouping
+
+1. **Normalization**: Always normalize keys for grouping
+   ```javascript
+   const normalize = (str) => (str || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+   const groupKey = `${normalize(artist)}|${normalize(album)}|${normalize(format)}`;
+   ```
+
+2. **Group Rendering**: Use Section Rendering API for cards
+   ```javascript
+   const response = await fetch(`/?section_id=product-group-card-renderer`, {
+     method: 'POST',
+     body: formData
+   });
+   ```
+
+3. **Progressive Loading**: Load in batches to prevent blocking
+   ```javascript
+   const batchSize = 10;
+   for (let i = 0; i < products.length; i += batchSize) {
+     const batch = products.slice(i, i + batchSize);
+     await renderBatch(batch);
+   }
+   ```
+
+### Predictive Search
+
+1. **Debouncing**: Always debounce search input
+   ```javascript
+   this.input.addEventListener('input', debounce(this.handleInput.bind(this), 300));
+   ```
+
+2. **Caching**: Cache results to reduce API calls
+   ```javascript
+   if (this.cachedResults[queryKey]) {
+     return this.cachedResults[queryKey];
+   }
+   ```
+
+3. **Accessibility**: Include proper ARIA attributes
+   ```liquid
+   role="combobox"
+   aria-expanded="false"
+   aria-owns="predictive-search-results"
+   ```
+
+### Filter Handling
+
+1. **Event Listeners**: Listen for filter update events
+   ```javascript
+   document.addEventListener('on:facet-filters:updated', (event) => {
+     this.handleFilterUpdate(event);
+   });
+   ```
+
+2. **Debouncing**: Debounce filter updates to prevent excessive API calls
+   ```javascript
+   if (this.filterUpdateTimeout) {
+     clearTimeout(this.filterUpdateTimeout);
+   }
+   this.filterUpdateTimeout = setTimeout(() => {
+     this.reloadProducts();
+   }, 300);
+   ```
+
+3. **URL Management**: Update URL with filter parameters
+   ```javascript
+   const url = new URL(window.location);
+   url.searchParams.set('filter.p.m.custom.media_condition', value);
+   window.history.pushState({}, '', url);
+   ```
+
+## Testing Guidelines
+
+### Before Committing
+
+1. **Check Console**: No JavaScript errors in browser console
+2. **Check Network**: Verify API calls are working
+3. **Check Rendering**: Products group correctly
+4. **Check Filters**: Filtering works as expected
+5. **Check Search**: Predictive search functions properly
+
+### Test Scenarios
+
+1. **Large Collections**: Test with collections > 500 products
+2. **Filter Combinations**: Test multiple filters together
+3. **Search Terms**: Test various search queries
+4. **Missing Metafields**: Test products with missing metafields
+5. **Edge Cases**: Empty collections, no results, etc.
+
+## Common Pitfalls
+
+### ⚠️ Don't Do This
+
+1. **Don't** hardcode metafield keys - use constants
+2. **Don't** forget to handle pagination for large collections
+3. **Don't** ignore errors - always handle them gracefully
+4. **Don't** block the UI - use progressive loading
+5. **Don't** forget accessibility - include ARIA attributes
+6. **Don't** skip normalization - always normalize grouping keys
+
+### ✅ Do This Instead
+
+1. **Do** use the metafield definitions from `config/metafields.json`
+2. **Do** implement pagination for collections > 250 products
+3. **Do** catch and log errors with meaningful messages
+4. **Do** load and render in batches
+5. **Do** include ARIA labels and roles
+6. **Do** normalize strings before comparing/grouping
+
+## Metafield Rules
+
+1. **All metafields** use namespace `custom`
+2. **Required metafields** for grouping: `artist`, `title`, `format`
+3. **List types** must use `list.single_line_text_field`
+4. **Date types** use `date` not `date_time` for release dates
+5. **Boolean types** for feature flags (e.g., `has_360_view`)
+
+## API Integration Rules
+
+1. **Storefront API Token** must be set in `theme.liquid`
+2. **Always check** token exists before making requests
+3. **Handle rate limits** - implement retry logic if needed
+4. **Include all metafields** in GraphQL queries for grouping
+5. **Use pagination** for collections > 250 products
+
+## Debug Mode
+
+Enable debug mode by adding `?debug=1` to URL. This shows:
+- Product fetching progress
+- Grouping results
+- Render progress
+- Filter updates
+- Performance metrics
+
+Check `collection-grouping-enhancer.js` for `debugLog()` calls.
+
+## Documentation Updates
+
+When adding new features:
+
+1. Update relevant documentation in `docs/`
+2. Update `config/metafields.json` if adding metafields
+3. Update `.cursorrules` if adding new patterns
+4. Add code comments for complex logic
+5. Document parameters in function comments
+
+## Resources
+
+- **Shopify Storefront API**: https://shopify.dev/docs/api/storefront
+- **Shopify Section Rendering API**: https://shopify.dev/docs/themes/architecture/sections/section-rendering-api
+- **Dawn Theme**: Base theme we're building on
+- **Metafields Guide**: See `docs/METAFIELDS_SETUP.md`
+- **Grouping Engine**: See `docs/STOREFRONT_API_GROUPING_ENGINE.md`
+

@@ -1,0 +1,39 @@
+/**
+ * SCSS Mixins
+ * Reusable mixins for common patterns
+ */
+
+@mixin visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+@mixin focus-visible {
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+}
+
+@mixin container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+
+  @media screen and (min-width: 750px) {
+    padding: 0 3rem;
+  }
+}
+
+@mixin transition($property: all, $duration: 300ms, $easing: ease) {
+  transition: $property $duration $easing;
+}
+

@@ -1,15 +1,16 @@
 {
-  "editor.formatOnSave": false,
+  "files.associations": {
+    "*.liquid": "liquid"
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[javascript]": {
-    "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[css]": {
-    "editor.formatOnSave": true
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[liquid]": {
-    "editor.defaultFormatter": "Shopify.theme-check-vscode",
-    "editor.formatOnSave": true
-  },
-  "themeCheck.checkOnSave": true
+    "editor.defaultFormatter": "sissel.shopify-liquid"
+  }
 }

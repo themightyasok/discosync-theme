@@ -1,4 +1,39 @@
-MatchingTranslations:
-  enabled: false
-TemplateLength:
-  enabled: false
+# Shopify Theme Check Configuration
+# Validates Liquid templates, JSON schemas, and Shopify theme structure
+
+extends:
+  - :theme
+  - :theme_app_extensions
+
+# Enable all recommended checks
+enable:
+  - LiquidTag
+
+# Disable checks that might be too strict or false positives
+ignore:
+  - MissingTemplate # Allow missing templates in some cases
+  
+# Custom configuration
+checkSettings:
+  # Require translations for all text
+  MissingTranslation: error
+  # Validate JSON schema
+  JSONSchemaError: error
+  # Check for deprecated filters
+  DeprecatedFilter: warning
+  # Validate asset references
+  MissingAsset: error
+  # Check liquid syntax
+  LiquidSyntaxError: error
+  # Validate section schema
+  SchemaTranslationMissing: warning
+
+# File-specific ignores
+files:
+  ignore:
+    - node_modules/**
+    - dist-package/**
+    - .vite/**
+    - daddypop/**
+    - assets/*-bundle.js
+    - assets/chunks/**

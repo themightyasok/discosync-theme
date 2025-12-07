@@ -1451,5 +1451,39 @@
         "default": "scheme-1"
       }
     ]
+  },
+  {
+    "name": "DiscoSync App Integration",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Automatic Metafield Creation"
+      },
+      {
+        "type": "paragraph",
+        "content": "Configure your DiscoSync app API credentials to automatically create required metafields when the theme loads. Metafields will be created once automatically."
+      },
+      {
+        "type": "text",
+        "id": "discosync_api_url",
+        "label": "App API URL",
+        "info": "Your DiscoSync app API base URL (e.g., https://your-app.example.com)",
+        "default": ""
+      },
+      {
+        "type": "text",
+        "id": "discosync_store_id",
+        "label": "Store ID",
+        "info": "Your store ID from the DiscoSync app",
+        "default": ""
+      },
+      {
+        "type": "text",
+        "id": "discosync_api_key",
+        "label": "API Key",
+        "info": "Your API key from the DiscoSync app for metafield creation",
+        "default": ""
+      }
+    ]
   }
 ]

@@ -1,0 +1,25 @@
+/**
+ * SCSS Variables
+ * Theme-wide variables for colors, spacing, typography, etc.
+ */
+
+// Colors (if you want to override Dawn's CSS variables)
+// Use CSS custom properties in actual implementation
+
+// Spacing
+$spacing-xs: 0.5rem;
+$spacing-sm: 1rem;
+$spacing-md: 2rem;
+$spacing-lg: 4rem;
+$spacing-xl: 6rem;
+
+// Breakpoints
+$breakpoint-mobile: 750px;
+$breakpoint-tablet: 990px;
+$breakpoint-desktop: 1200px;
+
+// Transitions
+$transition-fast: 150ms ease;
+$transition-base: 300ms ease;
+$transition-slow: 500ms ease;
+

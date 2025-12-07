@@ -1,5 +1,4 @@
 # OS generated files #
-######################
 .DS_Store
 .DS_Store?
 ._*
@@ -7,4 +6,52 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
-.shopify
+
+# Theme development
+node_modules/
+dist/
+dist-package/
+.vite/
+*.log
+
+# Husky
+.husky/_/
+
+# Prettier
+.prettiercache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+build/
+.tmp/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Shopify CLI
+.shopify/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Daddypop directory (legacy)
+daddypop/
+
+# Built bundles (generated files - commit these for distribution)
+# Uncomment if you want to track built files in git
+# !assets/*-bundle.js
+# !assets/chunks/
+# !assets/scss-*.css

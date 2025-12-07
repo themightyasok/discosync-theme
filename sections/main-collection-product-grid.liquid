@@ -22,6 +22,13 @@
   <script src="{{ 'quick-order-list.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}
 
+{%- comment -%}Product Grouping Engine - API bundle already loaded in theme.liquid{%- endcomment -%}
+  <script src="{{ 'components/collection-grouping-enhancer-bundle.js' | asset_url }}" defer="defer"></script>
+{%- if settings.card_hover_action == 'slideshow' -%}
+  <script src="{{ 'slider-enhanced.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'product-card-image-slider.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
 {%- style -%}
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
@@ -190,6 +197,21 @@
       </div>
     </div>
   {%- endpaginate -%}
+  
+  {%- comment -%}Product Grouping Enhancer{%- endcomment -%}
+  {%- if collection.products_count > 0 -%}
+    <collection-grouping-enhancer 
+      data-section-id="{{ section.id }}" 
+      data-collection-handle="{{ collection.handle }}"
+      data-card-size="medium"
+      data-card-price-bottom="false"
+      data-enable-quick-add="{{ section.settings.quick_add != 'none' }}"
+      data-card-contain="false"
+      data-show-dividers="true"
+      data-use-js-grouping="true"
+      style="display: none;">
+    </collection-grouping-enhancer>
+  {%- endif -%}
   {% if section.settings.image_shape == 'arch' %}
     {{ 'mask-arch.svg' | inline_asset_content }}
   {%- endif -%}

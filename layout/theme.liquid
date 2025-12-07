@@ -3,16 +3,37 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="theme-color" content="">
-    <link rel="canonical" href="{{ canonical_url }}">
+    {%- comment -%}Viewport with fit for mobile safe areas (notches, etc.){%- endcomment -%}
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    {%- comment -%}Theme color for mobile browser chrome (can be customized via settings){%- endcomment -%}
+    <meta name="theme-color" content="{{ settings.colors_accent_1 }}">
+    {%- if settings.colors_background_1 != blank -%}
+      <meta name="msapplication-TileColor" content="{{ settings.colors_background_1 }}">
+    {%- endif -%}
+    {%- comment -%}Canonical URL with proper handling{%- endcomment -%}
+    {%- if canonical_url != blank -%}
+      <link rel="canonical" href="{{ canonical_url }}">
+    {%- else -%}
+      <link rel="canonical" href="{{ shop.url }}{{ request.path }}">
+    {%- endif -%}
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
     {%- endif -%}
 
+    {%- comment -%}Resource Hints for Performance{%- endcomment -%}
+    {%- comment -%}Preconnect to Shopify CDN for faster asset loading{%- endcomment -%}
+    <link rel="dns-prefetch" href="https://cdn.shopify.com">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    <link rel="dns-prefetch" href="https://{{ shop.permanent_domain }}">
+    <link rel="preconnect" href="https://{{ shop.permanent_domain }}" crossorigin>
+    
+    {%- comment -%}Preconnect to Shopify API endpoints{%- endcomment -%}
+    <link rel="dns-prefetch" href="https://{{ shop.permanent_domain }}/api">
+    
     {%- unless settings.type_header_font.system? and settings.type_body_font.system? -%}
       <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+      <link rel="dns-prefetch" href="https://fonts.shopifycdn.com">
     {%- endunless -%}
 
     <title>
@@ -27,7 +48,37 @@
     {% endif %}
 
     {% render 'meta-tags' %}
+    {% render 'structured-data' %}
 
+    {%- comment -%}Storefront API token for product grouping engine - Replace with your own token from Shopify Admin > Apps > Develop apps > Storefront API{%- endcomment -%}
+    <meta name="shopify-storefront-api-token" content="YOUR_STOREFRONT_API_TOKEN_HERE">
+    
+    {%- comment -%}DiscoSync App API Configuration - Required for automatic metafield creation{%- endcomment -%}
+    {%- if settings.discosync_api_url -%}
+      <meta name="discosync-api-url" content="{{ settings.discosync_api_url | escape }}">
+    {%- endif -%}
+    {%- if settings.discosync_store_id -%}
+      <meta name="discosync-store-id" content="{{ settings.discosync_store_id | escape }}">
+    {%- endif -%}
+    {%- if settings.discosync_api_key -%}
+      <meta name="discosync-api-key" content="{{ settings.discosync_api_key | escape }}">
+    {%- endif -%}
+    
+    <script>
+      window.Shopify = window.Shopify || {};
+      window.Shopify.shop = {{ shop.permanent_domain | json }};
+    </script>
+    
+    {%- comment -%}Core theme utilities bundle - loads first, exposes window.CONFIG, window.themeLogger, etc.{%- endcomment -%}
+    <script src="{{ 'core-bundle.js' | asset_url }}" defer="defer"></script>
+    
+    {%- comment -%}API bundle - depends on core bundle{%- endcomment -%}
+    <script src="{{ 'api-bundle.js' | asset_url }}" defer="defer"></script>
+    
+    {%- comment -%}Utility bundles{%- endcomment -%}
+    <script src="{{ 'utils/metafield-setup-bundle.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'utils/modern-css-loader-bundle.js' | asset_url }}"></script>
+    
     <script src="{{ 'constants.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'pubsub.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'global.js' | asset_url }}" defer="defer"></script>
@@ -256,7 +307,9 @@
     {% endstyle %}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
-    <link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}" media="print" onload="this.media='all'">
+    {%- comment -%}Modern CSS loading with preload pattern{%- endcomment -%}
+    <link rel="preload" href="{{ 'component-cart-items.css' | asset_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}"></noscript>
 
     {%- if settings.cart_type == 'drawer' -%}
       {{ 'component-cart-drawer.css' | asset_url | stylesheet_tag }}
@@ -266,6 +319,7 @@
       {{ 'component-discounts.css' | asset_url | stylesheet_tag }}
     {%- endif -%}
 
+    {%- comment -%}Preload critical fonts with highest priority{%- endcomment -%}
     {%- unless settings.type_body_font.system? -%}
       {% comment %}theme-check-disable AssetPreload{% endcomment %}
       <link rel="preload" as="font" href="{{ settings.type_body_font | font_url }}" type="font/woff2" crossorigin>
@@ -273,7 +327,7 @@
     {%- endunless -%}
     {%- unless settings.type_header_font.system? -%}
       {% comment %}theme-check-disable AssetPreload{% endcomment %}
-      <link rel="preload" as="font" href="{{ settings.type_header_font | font_url }}" type="font/woff2" crossorigin>
+      <link rel="preload" as="font" href="{{ settings.type_header_font | font_url }}" type="font/woff2" crossorigin fetchpriority="high">
       {% comment %}theme-check-enable AssetPreload{% endcomment %}
     {%- endunless -%}
 
@@ -283,12 +337,8 @@
     {%- endif -%}
 
     {%- if settings.predictive_search_enabled -%}
-      <link
-        rel="stylesheet"
-        href="{{ 'component-predictive-search.css' | asset_url }}"
-        media="print"
-        onload="this.media='all'"
-      >
+      <link rel="preload" href="{{ 'component-predictive-search.css' | asset_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+      <noscript><link rel="stylesheet" href="{{ 'component-predictive-search.css' | asset_url }}"></noscript>
     {%- endif -%}
 
     <script>
@@ -299,9 +349,15 @@
   </head>
 
   <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
-    <a class="skip-to-content-link button visually-hidden" href="#MainContent">
+    {%- comment -%}Accessibility: Skip to main content link{%- endcomment -%}
+    <a class="skip-to-content-link button visually-hidden" href="#MainContent" aria-label="{{ 'accessibility.skip_to_text' | t }}">
       {{ 'accessibility.skip_to_text' | t }}
     </a>
+    
+    {%- comment -%}ARIA live regions for dynamic content announcements{%- endcomment -%}
+    <div id="aria-live-status" role="status" aria-live="polite" aria-atomic="true" class="visually-hidden"></div>
+    <div id="aria-live-alert" role="alert" aria-live="assertive" aria-atomic="true" class="visually-hidden"></div>
+    <div id="aria-live-log" role="status" aria-live="polite" aria-atomic="false" class="visually-hidden"></div>
 
     {%- if settings.cart_type == 'drawer' -%}
       {%- render 'cart-drawer' -%}
@@ -309,7 +365,8 @@
 
     {% sections 'header-group' %}
 
-    <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
+    {%- comment -%}Main content with proper landmark and focus management{%- endcomment -%}
+    <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1" aria-label="{{ 'accessibility.navigation.main' | t | default: 'Main content' }}">
       {{ content_for_layout }}
     </main>
 
@@ -366,7 +423,7 @@
     </script>
 
     {%- if settings.predictive_search_enabled -%}
-      <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
+      <script src="{{ 'components/predictive-search-bundle.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
 
     {%- if settings.cart_type == 'drawer' -%}

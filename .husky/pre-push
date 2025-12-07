@@ -1,0 +1,8 @@
+echo "🔍 Running pre-push validation..."
+
+# Run comprehensive validation
+npm run lint:all || exit 1
+node scripts/validate-pre-commit.js || exit 1
+
+echo "✅ Pre-push validation passed!"
+

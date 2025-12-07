@@ -5,6 +5,10 @@
 
 {%- if settings.predictive_search_enabled -%}
   <link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="{{ 'search-suggestions.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="{{ 'predictive-search-enhanced.css' | asset_url }}" media="print" onload="this.media='all'">
+  <script src="{{ 'tabs.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}
 
 {%- if section.settings.menu_type_desktop == 'mega' -%}

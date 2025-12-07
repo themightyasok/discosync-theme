@@ -14,6 +14,9 @@
 
 <script src="{{ 'main-search.js' | asset_url }}" defer="defer"></script>
 
+{%- comment -%}Product Grouping Engine - API bundle already loaded in theme.liquid{%- endcomment -%}
+  <script src="{{ 'components/collection-grouping-enhancer-bundle.js' | asset_url }}" defer="defer"></script>
+
 <style>
   .template-search__header {
     margin-bottom: 3rem;
@@ -329,6 +332,21 @@
     {%- endif -%}
   </div>
 {% endpaginate %}
+
+{%- comment -%}Product Grouping Enhancer for Search Results{%- endcomment -%}
+{%- if search.performed and search.results_count > 0 -%}
+  <collection-grouping-enhancer 
+    data-section-id="{{ section.id }}" 
+    data-search-terms="{{ search.terms | escape }}"
+    data-card-size="medium"
+    data-card-price-bottom="false"
+    data-enable-quick-add="false"
+    data-card-contain="false"
+    data-show-dividers="true"
+    data-use-js-grouping="true"
+    style="display: none;">
+  </collection-grouping-enhancer>
+{%- endif -%}
 {% if section.settings.image_shape == 'arch' %}
   {{ 'mask-arch.svg' | inline_asset_content }}
 {%- endif -%}

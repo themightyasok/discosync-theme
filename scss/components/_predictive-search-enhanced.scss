@@ -1,0 +1,30 @@
+/**
+ * Enhanced Predictive Search Component Styles
+ * Additional styles beyond base predictive-search.css
+ */
+
+.predictive-search-enhanced {
+  // Enhanced search styles
+}
+
+.predictive-search-tabs {
+  // Tab navigation in search results
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+.predictive-search-tab {
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color $transition-base;
+
+  &.active {
+    border-bottom-color: currentColor;
+  }
+}
+

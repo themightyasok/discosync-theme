@@ -1,0 +1,9 @@
+node_modules/
+dist-package/
+.vite/
+assets/*-bundle.js
+assets/chunks/
+daddypop/
+*.min.js
+*.min.css
+

@@ -1,0 +1,282 @@
+{%- comment -%}theme-check-disable ImgLazyLoading{%- endcomment -%}
+{%- comment -%}
+  Parameters:
+  - image {Object} - Image object.
+  - widths {String} - Comma separated list of image widths for the 'srcset' attribute (optional).
+  - mobile_widths {String} - Comma separated list of image widths for a mobile specific source tag (optional).
+  - quality {Number} - The relative quality of the of the image to load as a decimal (optional, defaults to 0.75).
+                      The higher the number, the sharper (but larger) the image will be.
+  - src_width {Number} - Width for the 'src' attribute.
+  - srcset_2x {Boolean} - Srcset should only be a 2x version of the src_width (optional, default is false).
+  - sizes {String} - Content for the 'sizes' attribute (optional).
+  - lazy_load {Boolean} - Image should be lazy load (optional, default is true).
+  - fetchpriority {String} - low/high/nil, passed on to image_tag (optional, default is nil)
+  - class {String} - Class name(s) for the 'class' attribute (optional).
+  - attributes {String} - Additional attributes (optional).
+  - alt_text {String} - Custom text for the 'alt' attribute (optional).
+  - disable_focal_point {Boolean} - Disables the focussing of a spot on the image (optional, default is false).
+  - section_index {Number} - If passed, image lazy load will be prevented if it's the first section
+  - as_mobile_source {Boolean} - Will output <source> instead of <img> for use in <picture> (optional, default is false)
+  - format {String} - Image format: webp, avif, jpg, png (optional, defaults to auto-detect best format)
+  - width_ratio {Number} - Width/height ratio for CLS prevention (optional)
+
+  Usage:
+  {% render 'image',
+    image: image,
+    widths: '480, 640, 960, 1280',
+    src_width: 1280,
+    sizes: sizes,
+    class: 'img-fit'
+  %}
+{%- endcomment -%}
+
+{%- liquid
+  if srcset_2x
+    assign image_width = src_width
+    assign src_width_2x = src_width | times: 2
+
+    if image.width >= src_width_2x
+      capture srcset
+        echo image | image_url: width: src_width | append: ', '
+        echo image | image_url: width: src_width_2x | append: ' 2x'
+      endcapture
+
+      assign src_width = src_width_2x
+      assign image_width = src_width_2x
+    endif
+  elsif widths
+    assign input_srcset = widths | remove: ' ' | split: ','
+
+    for size in input_srcset
+      assign size_int = size | times: 1
+
+      if forloop.first and image.width < size_int
+        assign output_srcset = image.width
+        break
+      endif
+
+      if image.width >= size_int
+        unless forloop.first
+          assign output_srcset = output_srcset | append: ','
+        endunless
+
+        assign output_srcset = output_srcset | append: size
+      else
+        break
+      endif
+    endfor
+
+    assign output_srcset = output_srcset | split: ','
+
+    if quality
+      assign quality = quality | times: settings.image_quality
+    else
+      assign quality = settings.image_quality
+    endif
+
+    for size in output_srcset
+      capture srcset
+        echo srcset
+        unless forloop.first
+          echo ', '
+        endunless
+        assign output_image_width = size | times: quality
+        echo image | image_url: width: output_image_width | append: ' ' | append: size | append: 'w'
+      endcapture
+
+      if forloop.last
+        assign image_width = output_image_width
+      endif
+    endfor
+
+    if mobile_widths
+      assign mobile_input_srcset = mobile_widths | remove: ' ' | split: ','
+
+      for size in mobile_input_srcset
+        assign size_int = size | times: 1
+
+        if forloop.first and image.width < size_int
+          assign mobile_output_srcset = image.width
+          break
+        endif
+
+        if image.width >= size_int
+          unless forloop.first
+            assign mobile_output_srcset = mobile_output_srcset | append: ','
+          endunless
+
+          assign mobile_output_srcset = mobile_output_srcset | append: size
+        else
+          break
+        endif
+      endfor
+
+      assign mobile_output_srcset = mobile_output_srcset | split: ','
+
+      for size in mobile_output_srcset
+        capture mobile_srcset
+          echo mobile_srcset
+          unless forloop.first
+            echo ', '
+          endunless
+          echo image | image_url: width: size | append: ' ' | append: size | append: 'w'
+        endcapture
+
+        if forloop.last
+          assign mobile_image_width = size
+        endif
+      endfor
+    endif
+  endif
+
+  assign image_height = image_width | divided_by: image.aspect_ratio | round
+
+  if lazy_load == nil
+    unless section_index == 1
+      assign lazy_load = true
+    else
+      assign lazy_load = false
+    endunless
+  endif
+
+  if fetchpriority == blank
+    assign fetchpriority = nil
+  endif
+
+  assign disable_focal_point = disable_focal_point | default: false
+  
+  {%- comment -%}Modern image format support (WebP/AVIF) - Only when format parameter is provided{%- endcomment -%}
+  assign format = format | default: ''
+  assign use_modern_formats = false
+  assign webp_srcset = ''
+  assign avif_srcset = ''
+  assign mobile_webp_srcset = ''
+  assign mobile_avif_srcset = ''
+  
+  {%- comment -%}Build WebP/AVIF srcsets only if format is explicitly requested{%- endcomment -%}
+  if format == 'webp' or format == 'avif' or format == 'auto'
+    if widths and output_srcset
+      assign use_modern_formats = true
+      
+      {%- comment -%}Build WebP srcset{%- endcomment -%}
+      if format == 'webp' or format == 'auto'
+        for size in output_srcset
+          unless forloop.first
+            assign webp_srcset = webp_srcset | append: ', '
+          endunless
+          assign output_image_width = size | times: quality
+          assign webp_srcset = webp_srcset | append: image | image_url: width: output_image_width, format: 'webp' | append: ' ' | append: size | append: 'w'
+        endfor
+      endif
+      
+      {%- comment -%}Build AVIF srcset (better compression than WebP){%- endcomment -%}
+      if format == 'avif' or format == 'auto'
+        for size in output_srcset
+          unless forloop.first
+            assign avif_srcset = avif_srcset | append: ', '
+          endunless
+          assign output_image_width = size | times: quality
+          assign avif_srcset = avif_srcset | append: image | image_url: width: output_image_width, format: 'avif' | append: ' ' | append: size | append: 'w'
+        endfor
+      endif
+      
+      {%- comment -%}Mobile WebP/AVIF srcsets{%- endcomment -%}
+      if mobile_widths and mobile_output_srcset
+        if format == 'webp' or format == 'auto'
+          for size in mobile_output_srcset
+            unless forloop.first
+              assign mobile_webp_srcset = mobile_webp_srcset | append: ', '
+            endunless
+            assign mobile_webp_srcset = mobile_webp_srcset | append: image | image_url: width: size, format: 'webp' | append: ' ' | append: size | append: 'w'
+          endfor
+        endif
+        
+        if format == 'avif' or format == 'auto'
+          for size in mobile_output_srcset
+            unless forloop.first
+              assign mobile_avif_srcset = mobile_avif_srcset | append: ', '
+            endunless
+            assign mobile_avif_srcset = mobile_avif_srcset | append: image | image_url: width: size, format: 'avif' | append: ' ' | append: size | append: 'w'
+          endfor
+        endif
+      endif
+    endif
+  endif
+-%}
+
+{%- if image and src_width -%}
+  {%- comment -%}Use <picture> element for modern formats with fallbacks{%- endcomment -%}
+  {%- if use_modern_formats and (avif_srcset != blank or webp_srcset != blank or mobile_srcset) -%}
+    <picture>
+      {%- comment -%}Mobile AVIF{%- endcomment -%}
+      {%- if mobile_avif_srcset -%}
+        <source srcset="{{ mobile_avif_srcset }}"
+                type="image/avif"
+                media="(max-width: 600px)"
+                width="{{ mobile_image_width }}"
+                height="{{ mobile_image_width | divided_by: image.aspect_ratio | round }}">
+      {%- endif -%}
+      
+      {%- comment -%}Mobile WebP{%- endcomment -%}
+      {%- if mobile_webp_srcset -%}
+        <source srcset="{{ mobile_webp_srcset }}"
+                type="image/webp"
+                media="(max-width: 600px)"
+                width="{{ mobile_image_width }}"
+                height="{{ mobile_image_width | divided_by: image.aspect_ratio | round }}">
+      {%- endif -%}
+      
+      {%- comment -%}Desktop AVIF{%- endcomment -%}
+      {%- if avif_srcset != blank -%}
+        <source srcset="{{ avif_srcset }}"
+                type="image/avif"
+                {% if sizes %}sizes="{{ sizes }}"{% endif %}>
+      {%- endif -%}
+      
+      {%- comment -%}Desktop WebP{%- endcomment -%}
+      {%- if webp_srcset != blank -%}
+        <source srcset="{{ webp_srcset }}"
+                type="image/webp"
+                {% if sizes %}sizes="{{ sizes }}"{% endif %}>
+      {%- endif -%}
+      
+      {%- comment -%}Mobile fallback{%- endcomment -%}
+      {%- if mobile_srcset and as_mobile_source == false -%}
+        <source srcset="{{ mobile_srcset }}"
+                media="(max-width: 600px)"
+                width="{{ mobile_image_width }}"
+                height="{{ mobile_image_width | divided_by: image.aspect_ratio | round }}">
+      {%- endif -%}
+      
+      {%- comment -%}Fallback img tag{%- endcomment -%}
+      <img {% if srcset %}srcset="{{ srcset }}" {% endif -%}
+           {% if sizes and srcset %}sizes="{{ sizes }}" {% endif -%}
+           src="{{ image | image_url: width: src_width }}"
+           {% if class %}class="{{ class }}" {% endif -%}
+           {% if attributes %}{{ attributes }} {% endif -%}
+           {% if disable_focal_point == false and image.presentation %}style="object-position: {{ image.presentation.focal_point }}" {% endif -%}
+           loading="{% if lazy_load %}lazy{% else %}eager{% endif %}"
+           width="{{ image_width }}"
+           height="{{ image_height }}"
+           {% if fetchpriority %}fetchpriority="{{ fetchpriority }}"{% endif %}
+           alt="{{ alt_text | default: image.alt | escape }}"
+           {%- comment -%}Prevent CLS with aspect-ratio{%- endcomment -%}
+           {%- if width_ratio -%}style="aspect-ratio: {{ width_ratio }}; {{ style }}"{%- endif -%}>
+    </picture>
+  {%- else -%}
+    {%- comment -%}Standard img tag for when no modern formats needed{%- endcomment -%}
+    <img {% if srcset %}srcset="{{ srcset }}" {% endif -%}
+         {% if sizes and srcset %}sizes="{{ sizes }}" {% endif -%}
+         src="{{ image | image_url: width: src_width }}"
+         {% if class %}class="{{ class }}" {% endif -%}
+         {% if attributes %}{{ attributes }} {% endif -%}
+         {% if disable_focal_point == false and image.presentation %}style="object-position: {{ image.presentation.focal_point }}" {% endif -%}
+         loading="{% if lazy_load %}lazy{% else %}eager{% endif %}"
+         width="{{ image_width }}"
+         height="{{ image_height }}"
+         {% if fetchpriority %}fetchpriority="{{ fetchpriority }}"{% endif %}
+         alt="{{ alt_text | default: image.alt | escape }}"
+         {%- comment -%}Prevent CLS with aspect-ratio{%- endcomment -%}
+         {%- if width_ratio -%}style="aspect-ratio: {{ width_ratio }}; {{ style }}"{%- endif -%}>
+  {%- endif -%}
+{%- endif -%}
