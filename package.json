@@ -13,7 +13,7 @@
     "dist": "npm run build:prod && node scripts/create-dist-package.js",
     "lint": "eslint assets/**/*.js --ext .js",
     "lint:fix": "eslint assets/**/*.js --ext .js --fix",
-    "lint:liquid": "npx @shopify/theme-check-node",
+    "lint:liquid": "npx --yes @shopify/theme-check-node",
     "lint:all": "npm run lint && npm run lint:liquid",
     "format": "prettier --write \"**/*.{js,json,scss,liquid}\"",
     "format:check": "prettier --check \"**/*.{js,json,scss,liquid}\"",
