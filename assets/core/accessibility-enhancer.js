@@ -163,7 +163,7 @@ class AccessibilityEnhancer {
     const selector =
       'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
     return Array.from(container.querySelectorAll(selector)).filter(
-      (el) => el.offsetParent !== null && !el.hasAttribute('hidden')
+      (el) => el.offsetParent !== null && !el.hasAttribute('hidden'),
     );
   }
 

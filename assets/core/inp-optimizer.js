@@ -70,7 +70,7 @@ class INPOptimizer {
           ticking = true;
         }
       },
-      { passive: true }
+      { passive: true },
     );
   }
 
@@ -89,7 +89,7 @@ class INPOptimizer {
           window.dispatchEvent(new CustomEvent('optimized-resize'));
         }, 150);
       },
-      { passive: true }
+      { passive: true },
     );
   }
 
@@ -112,7 +112,7 @@ class INPOptimizer {
               this.batchQueue = [];
               this.batchTimeout = null;
             },
-            { timeout: 100 }
+            { timeout: 100 },
           );
           this.batchTimeout = true;
         }

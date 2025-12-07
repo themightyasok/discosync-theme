@@ -12,7 +12,12 @@ if (!customElements.get('custom-select')) {
       }
 
       this.setButtonWidth();
-      window.initLazyScript(this, this.init.bind(this));
+      // Initialize immediately if initLazyScript doesn't exist
+      if (typeof window.initLazyScript === 'function') {
+        window.initLazyScript(this, this.init.bind(this));
+      } else {
+        this.init();
+      }
     }
 
     init() {
@@ -41,7 +46,7 @@ if (!customElements.get('custom-select')) {
     static getNextVisibleSibling(elem) {
       let sibling = elem.nextElementSibling;
       while (sibling) {
-        if (sibling.offsetParent) return sibling;
+        if (sibling.offsetParent) {return sibling;}
         sibling = sibling.nextElementSibling;
       }
       return null;
@@ -55,7 +60,7 @@ if (!customElements.get('custom-select')) {
     static getPreviousVisibleSibling(elem) {
       let sibling = elem.previousElementSibling;
       while (sibling) {
-        if (sibling.offsetParent) return sibling;
+        if (sibling.offsetParent) {return sibling;}
         sibling = sibling.previousElementSibling;
       }
       return null;
@@ -242,7 +247,7 @@ if (!customElements.get('custom-select')) {
      * Hides the options list.
      */
     hideListbox() {
-      if (!this.listboxOpen) return;
+      if (!this.listboxOpen) {return;}
 
       this.listbox.hidden = true;
       this.listboxOpen = false;
@@ -352,7 +357,7 @@ if (!customElements.get('custom-select')) {
           // Dispatch a 'change' event on the custom select element.
           const detail = {
             selectedValue: option.dataset.value,
-            productUrl: option.dataset.productUrl
+            productUrl: option.dataset.productUrl,
           };
           this.dispatchEvent(new CustomEvent('change', { bubbles: true, detail }));
         }

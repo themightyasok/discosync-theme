@@ -339,7 +339,10 @@
     <script src="{{ 'components/predictive-search-bundle.js' | asset_url }}" defer="defer"></script>
     {%- endif -%} {%- if settings.cart_type == 'drawer' -%}
     <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
-    {%- endif -%} {%- comment -%}Group Selection Handler for grouped products drawer{%- endcomment -%}
+    {%- endif -%}     {%- comment -%}Group Selection Handler for grouped products drawer{%- endcomment -%}
     <script src="{{ 'group-selection-handler.js' | asset_url }}" defer="defer"></script>
+
+    {%- comment -%}Side Drawer for filters and drawers{%- endcomment -%}
+    <script src="{{ 'side-drawer.js' | asset_url }}" defer="defer"></script>
   </body>
 </html>

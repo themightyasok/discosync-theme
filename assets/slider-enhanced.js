@@ -19,7 +19,12 @@ class CarouselSlider extends HTMLElement {
     this.slides = this.querySelector('.slider__item').parentElement.children;
     if (this.slides.length < 2) return;
 
-    window.initLazyScript(this, this.init.bind(this));
+      // Initialize immediately if initLazyScript doesn't exist
+      if (typeof window.initLazyScript === 'function') {
+        window.initLazyScript(this, this.init.bind(this));
+      } else {
+        this.init();
+      }
   }
 
   init() {

@@ -44,7 +44,7 @@ class CLSPrevention {
       },
       {
         rootMargin: '50px',
-      }
+      },
     );
 
     // Observe all images

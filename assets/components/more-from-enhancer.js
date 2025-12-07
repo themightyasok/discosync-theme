@@ -141,7 +141,7 @@ if (!customElements.get('more-from-enhancer')) {
 
       // Find all "more from" section wrappers
       const wrappers = document.querySelectorAll(
-        '.dynamic-artist-collection-wrapper, .dynamic-label-collection-wrapper, .dynamic-genre-collection-wrapper'
+        '.dynamic-artist-collection-wrapper, .dynamic-label-collection-wrapper, .dynamic-genre-collection-wrapper',
       );
       this.debugLog(`🟢 MoreFromEnhancer: Found ${wrappers.length} wrapper(s)`);
 
@@ -216,7 +216,7 @@ if (!customElements.get('more-from-enhancer')) {
           searchType,
           searchValue,
           currentProductId,
-          wrapper
+          wrapper,
         );
       } else {
         this.debugLog('🔴 MoreFromEnhancer: StorefrontAPIClient not available, using fallback');
@@ -226,7 +226,7 @@ if (!customElements.get('more-from-enhancer')) {
           searchType,
           searchValue,
           currentProductId,
-          wrapper
+          wrapper,
         );
       }
     }
@@ -236,14 +236,14 @@ if (!customElements.get('more-from-enhancer')) {
       searchValue,
       currentProductId,
       wrapper,
-      append = false
+      append = false,
     ) {
       // Build search query outside try/catch so it's accessible in catch block
       const searchQuery = this.buildStorefrontSearchQuery(searchType, searchValue);
 
       try {
         this.debugLog(
-          `🟢 MoreFromEnhancer: Starting Storefront API fetch for ${searchType}: "${searchValue}"`
+          `🟢 MoreFromEnhancer: Starting Storefront API fetch for ${searchType}: "${searchValue}"`,
         );
         this.debugLog(`🟢 MoreFromEnhancer: Built search query: "${searchQuery}"`);
 
@@ -303,7 +303,7 @@ if (!customElements.get('more-from-enhancer')) {
         this.debugLog('🟢 MoreFromEnhancer: Grouping products');
         const grouped = this.groupProducts(products);
         this.debugLog(
-          `🟢 MoreFromEnhancer: Created ${grouped.groups.length} groups and ${grouped.singles.length} singles`
+          `🟢 MoreFromEnhancer: Created ${grouped.groups.length} groups and ${grouped.singles.length} singles`,
         );
 
         // Render grouped products
@@ -325,7 +325,7 @@ if (!customElements.get('more-from-enhancer')) {
           searchValue,
           currentProductId,
           wrapper,
-          append
+          append,
         );
       }
     }
@@ -476,7 +476,7 @@ if (!customElements.get('more-from-enhancer')) {
 
       // Find or create container
       let container = wrapper.querySelector(
-        'ul.slider__grid, .products-grid-container ul, ul.grid'
+        'ul.slider__grid, .products-grid-container ul, ul.grid',
       );
       this.debugLog('🔵 MoreFromEnhancer: Container search result', {
         containerFound: !!container,
@@ -530,7 +530,7 @@ if (!customElements.get('more-from-enhancer')) {
       // Use Section Rendering API with enhanced product data passing
       const sectionId = 'product-group-card-renderer';
       this.debugLog(
-        `🔵 MoreFromEnhancer: Starting Section Rendering API calls for ${allItems.length} items`
+        `🔵 MoreFromEnhancer: Starting Section Rendering API calls for ${allItems.length} items`,
       );
 
       const cardPromises = allItems.slice(0, 8).map(async (item, index) => {
@@ -567,7 +567,7 @@ if (!customElements.get('more-from-enhancer')) {
               url: url,
               method: 'POST',
               formDataEntries: Array.from(formData.entries()),
-            }
+            },
           );
 
           const response = await fetch(url, {
@@ -671,13 +671,13 @@ if (!customElements.get('more-from-enhancer')) {
       searchValue,
       currentProductId,
       wrapper,
-      append = false
+      append = false,
     ) {
       try {
         // Step 1: Use Search API to find products by metafield (no 50 limit)
         const searchQuery = this.buildSearchQuery(searchType, searchValue);
         const searchResponse = await fetch(
-          `/search/suggest.json?q=${encodeURIComponent(searchQuery)}&resources[type]=product&resources[limit]=100`
+          `/search/suggest.json?q=${encodeURIComponent(searchQuery)}&resources[type]=product&resources[limit]=100`,
         );
         const searchData = await searchResponse.json();
 
@@ -732,10 +732,10 @@ if (!customElements.get('more-from-enhancer')) {
 
         // Find product containers in the section
         const newContainer = sectionElement.querySelector(
-          'ul.slider__grid, .products-grid-container ul, ul.grid'
+          'ul.slider__grid, .products-grid-container ul, ul.grid',
         );
         const existingContainer = wrapper.querySelector(
-          'ul.slider__grid, .products-grid-container ul, ul.grid'
+          'ul.slider__grid, .products-grid-container ul, ul.grid',
         );
 
         if (newContainer && existingContainer) {
@@ -743,7 +743,7 @@ if (!customElements.get('more-from-enhancer')) {
             Array.from(newContainer.querySelectorAll('li')),
             wrapper,
             append,
-            existingContainer
+            existingContainer,
           );
         }
       } catch (error) {
@@ -766,7 +766,7 @@ if (!customElements.get('more-from-enhancer')) {
     async renderProducts(newItems, wrapper, append, existingContainer) {
       if (!existingContainer) {
         existingContainer = wrapper.querySelector(
-          'ul.slider__grid, .products-grid-container ul, ul.grid'
+          'ul.slider__grid, .products-grid-container ul, ul.grid',
         );
       }
       if (!existingContainer) {
@@ -777,7 +777,7 @@ if (!customElements.get('more-from-enhancer')) {
         // Append new products that don't already exist
         const existingHandles = new Set(
           Array.from(
-            existingContainer.querySelectorAll('[data-product-handle], a[href*="/products/"]')
+            existingContainer.querySelectorAll('[data-product-handle], a[href*="/products/"]'),
           )
             .map((el) => {
               const handle = el.dataset?.productHandle;
@@ -793,7 +793,7 @@ if (!customElements.get('more-from-enhancer')) {
               }
               return null;
             })
-            .filter(Boolean)
+            .filter(Boolean),
         );
 
         newItems.forEach((item) => {
@@ -854,7 +854,7 @@ if (!customElements.get('more-from-enhancer')) {
 
     // Check if dynamic sections exist
     const wrappers = document.querySelectorAll(
-      '.dynamic-artist-collection-wrapper, .dynamic-label-collection-wrapper, .dynamic-genre-collection-wrapper'
+      '.dynamic-artist-collection-wrapper, .dynamic-label-collection-wrapper, .dynamic-genre-collection-wrapper',
     );
     console.log('🔵 MoreFromEnhancer: Found wrappers on page load:', wrappers.length);
 

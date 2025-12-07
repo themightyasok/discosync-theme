@@ -61,7 +61,7 @@ class StorefrontAPIClient {
 
         return result.data;
       },
-      { queryName: variables.operationName || 'unknown' }
+      { queryName: variables.operationName || 'unknown' },
     );
   }
 
@@ -352,7 +352,7 @@ class StorefrontAPIClient {
 
     // Debug: Log all filter parameters (will be logged to debug panel via CollectionGroupingEnhancer)
     const allFilterParams = Array.from(params.entries()).filter(([key]) =>
-      key.startsWith('filter.')
+      key.startsWith('filter.'),
     );
 
     const parseParam = (value) => {
@@ -429,7 +429,7 @@ class StorefrontAPIClient {
       styleGenre: (() => {
         const metafield = getParamWithFallback(
           'filter.p.m.custom.computed_style_genre',
-          'filter.p.m.custom.style_genre'
+          'filter.p.m.custom.style_genre',
         );
         if (metafield) {
           return metafield;
@@ -439,11 +439,11 @@ class StorefrontAPIClient {
       // Product metafields use filter.p.m.custom.* format, not filter.v.option.*
       mediaCondition: getParamWithFallback(
         'filter.p.m.custom.media_condition',
-        'filter.v.option.media_condition'
+        'filter.v.option.media_condition',
       ),
       sleeveCondition: getParamWithFallback(
         'filter.p.m.custom.sleeve_condition',
-        'filter.v.option.sleeve_condition'
+        'filter.v.option.sleeve_condition',
       ),
     };
 

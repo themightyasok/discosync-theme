@@ -77,7 +77,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       // This is necessary because filters can be applied while initial enhancement is still running
       if (this.isEnhancing) {
         this.debugLog(
-          '🟡 CollectionGroupingEnhancer: Interrupting current enhancement for filter update'
+          '🟡 CollectionGroupingEnhancer: Interrupting current enhancement for filter update',
         );
       }
       this.isEnhancing = false;
@@ -123,7 +123,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
             grid = foundGrid;
           } else {
             const container = filterResultsAfter.querySelector(
-              '.products-grid-container, .container'
+              '.products-grid-container, .container',
             );
             grid = container ? container.querySelector('ul') : null;
           }
@@ -183,7 +183,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           this.collectionHandle = match[1];
           this.debugLog(
             '🟢 CollectionGroupingEnhancer: Recovered collectionHandle:',
-            this.collectionHandle
+            this.collectionHandle,
           );
         } else {
           this.debugLog('🔴 CollectionGroupingEnhancer: No collectionHandle');
@@ -327,7 +327,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       // Wait for StorefrontAPIClient to be available
       if (typeof StorefrontAPIClient === 'undefined') {
         this.debugLog(
-          '🔵 CollectionGroupingEnhancer: StorefrontAPIClient not found, retrying in 100ms...'
+          '🔵 CollectionGroupingEnhancer: StorefrontAPIClient not found, retrying in 100ms...',
         );
         setTimeout(() => this.init(), 100);
         return;
@@ -339,7 +339,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
 
       if (document.readyState === 'loading') {
         this.debugLog(
-          '🔵 CollectionGroupingEnhancer: Document still loading, waiting for DOMContentLoaded'
+          '🔵 CollectionGroupingEnhancer: Document still loading, waiting for DOMContentLoaded',
         );
         document.addEventListener('DOMContentLoaded', () => {
           this.debugLog('🔵 CollectionGroupingEnhancer: DOMContentLoaded fired, calling enhance()');
@@ -347,7 +347,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         });
       } else {
         this.debugLog(
-          '🔵 CollectionGroupingEnhancer: Document ready, calling enhance() immediately'
+          '🔵 CollectionGroupingEnhancer: Document ready, calling enhance() immediately',
         );
         this.enhance();
       }
@@ -373,7 +373,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       // Check if collection.filters would have active values (we can't access this directly in JS,
       // but we can check the DOM for active filter indicators)
       const activeFilterElements = document.querySelectorAll(
-        '.facet-filters input:checked, .storefront-filters input:checked, [data-filter-active="true"]'
+        '.facet-filters input:checked, .storefront-filters input:checked, [data-filter-active="true"]',
       );
       const hasActiveFilterElements = activeFilterElements.length > 0;
 
@@ -399,7 +399,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         // CRITICAL: Check if JS grouping should run
         if (!this.useJsGrouping) {
           this.debugLog(
-            '🟡 CollectionGroupingEnhancer: JS grouping disabled (filters active or collection too large)'
+            '🟡 CollectionGroupingEnhancer: JS grouping disabled (filters active or collection too large)',
           );
           this.showLiquidProducts(); // Show Liquid-rendered products
           return;
@@ -419,7 +419,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
 
         if (!this.isSearchMode && !this.collectionHandle) {
           this.debugLog(
-            '🔴 CollectionGroupingEnhancer: Missing collectionHandle for collection mode'
+            '🔴 CollectionGroupingEnhancer: Missing collectionHandle for collection mode',
           );
           // Try to extract from URL
           const match = window.location.pathname.match(/\/collections\/([^/]+)/);
@@ -427,7 +427,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
             this.collectionHandle = match[1];
             this.debugLog(
               '🟢 CollectionGroupingEnhancer: Recovered collectionHandle from URL:',
-              this.collectionHandle
+              this.collectionHandle,
             );
           } else {
             this.debugLog('🔴 CollectionGroupingEnhancer: Not a collection page, cannot proceed');
@@ -440,11 +440,11 @@ if (!customElements.get('collection-grouping-enhancer')) {
           this.debugLog('🔴 CollectionGroupingEnhancer: URL params:', window.location.search);
           this.debugLog(
             '🔴 CollectionGroupingEnhancer: dataset.searchTerms:',
-            this.dataset.searchTerms
+            this.dataset.searchTerms,
           );
           this.debugLog(
             '🔴 CollectionGroupingEnhancer: getSearchTermsFromURL():',
-            this.getSearchTermsFromURL()
+            this.getSearchTermsFromURL(),
           );
           // Don't fallback - fix the search terms detection
           const urlParams = new URLSearchParams(window.location.search);
@@ -452,7 +452,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           if (this.searchTerms) {
             this.debugLog(
               '🟢 CollectionGroupingEnhancer: Recovered search terms from URL:',
-              this.searchTerms
+              this.searchTerms,
             );
           } else {
             this.debugLog('🔴 CollectionGroupingEnhancer: Still no search terms found');
@@ -462,16 +462,16 @@ if (!customElements.get('collection-grouping-enhancer')) {
         if (this.isSearchMode) {
           this.debugLog(
             '🟢 CollectionGroupingEnhancer: Starting PROGRESSIVE enhancement for search:',
-            this.searchTerms
+            this.searchTerms,
           );
           this.debugLog(
             '🟢 CollectionGroupingEnhancer: Search mode detected, isSearchMode:',
-            this.isSearchMode
+            this.isSearchMode,
           );
         } else {
           this.debugLog(
             '🟢 CollectionGroupingEnhancer: Starting PROGRESSIVE enhancement for collection:',
-            this.collectionHandle
+            this.collectionHandle,
           );
         }
 
@@ -481,7 +481,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         this.debugLog('🟢 CollectionGroupingEnhancer: Using filters:', JSON.stringify(apiFilters));
         this.debugLog(
           '🟢 CollectionGroupingEnhancer: Filter params from URL:',
-          JSON.stringify(filterParams)
+          JSON.stringify(filterParams),
         );
 
         // Initialize state for progressive loading
@@ -495,7 +495,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         // Initialize grid - try multiple selectors to work with both collection and search pages
         // Also check #filter-results for when filters have been applied, and Dawn's #product-grid
         let existingGrid = document.querySelector(
-          '#product-grid, .main-products-grid__results ul, .main-products-grid__results .products-grid-container ul, #ProductGridContainer ul, #filter-results ul'
+          '#product-grid, .main-products-grid__results ul, .main-products-grid__results .products-grid-container ul, #ProductGridContainer ul, #filter-results ul',
         );
         if (!existingGrid) {
           // Try finding via filter-results container
@@ -504,7 +504,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
             existingGrid = filterResults.querySelector('ul');
             if (!existingGrid) {
               const gridContainer = filterResults.querySelector(
-                '.products-grid-container, .container'
+                '.products-grid-container, .container',
               );
               existingGrid = gridContainer ? gridContainer.querySelector('ul') : null;
             }
@@ -515,7 +515,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           // Announce error to screen readers
           if (window.accessibilityEnhancer) {
             window.accessibilityEnhancer.announceError(
-              'Product grid not found. Unable to display products.'
+              'Product grid not found. Unable to display products.',
             );
           }
 
@@ -532,7 +532,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         this.debugLog(
           '🟢 CollectionGroupingEnhancer: Grid has',
           existingGrid.children.length,
-          'Liquid products'
+          'Liquid products',
         );
 
         // Store original grid classes and attributes
@@ -554,7 +554,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           existingGrid.style.display = '';
         }
         this.debugLog(
-          '🟢 CollectionGroupingEnhancer: Cleared Liquid products, ready for JS grouping'
+          '🟢 CollectionGroupingEnhancer: Cleared Liquid products, ready for JS grouping',
         );
 
         // Get settings
@@ -570,7 +570,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         await this.loadProductsProgressively(
           filtersToUse,
           existingGrid,
-          this.isSearchMode ? filterParams : null
+          this.isSearchMode ? filterParams : null,
         );
 
         // CRITICAL: Ensure grid is visible after products are loaded
@@ -581,7 +581,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           }
           const productCount = existingGrid.children.length;
           this.debugLog(
-            `🟢 CollectionGroupingEnhancer: Grid visibility check - children: ${productCount}, display: ${window.getComputedStyle(existingGrid).display}, hidden class: ${existingGrid.classList.contains('js-grouping-hidden')}`
+            `🟢 CollectionGroupingEnhancer: Grid visibility check - children: ${productCount}, display: ${window.getComputedStyle(existingGrid).display}, hidden class: ${existingGrid.classList.contains('js-grouping-hidden')}`,
           );
 
           if (productCount === 0) {
@@ -589,11 +589,11 @@ if (!customElements.get('collection-grouping-enhancer')) {
             this.debugLog('🔴 CollectionGroupingEnhancer: Grid classes:', existingGrid.className);
             this.debugLog(
               '🔴 CollectionGroupingEnhancer: Grid innerHTML length:',
-              existingGrid.innerHTML.length
+              existingGrid.innerHTML.length,
             );
             this.debugLog(
               '🔴 CollectionGroupingEnhancer: Grid parent:',
-              existingGrid.parentElement
+              existingGrid.parentElement,
             );
             // Force grid to be visible anyway
             existingGrid.classList.remove('js-grouping-hidden');
@@ -614,7 +614,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
             this.renderedCount ||
             (this.groupedData?.groups?.length || 0) + (this.groupedData?.singles?.length || 0);
           window.accessibilityEnhancer.announceSuccess(
-            `Products loaded: ${totalItems} items displayed.`
+            `Products loaded: ${totalItems} items displayed.`,
           );
         }
 
@@ -622,7 +622,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       } catch (error) {
         this.debugLog(
           '🔴 CollectionGroupingEnhancer: CRITICAL ERROR - Grouping failed:',
-          error.message
+          error.message,
         );
         this.debugLog('🔴 CollectionGroupingEnhancer: Stack trace:', error.stack);
 
@@ -692,7 +692,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
             data = await this.apiClient.searchProducts(
               this.searchTerms,
               null, // cursor
-              BATCH_SIZE
+              BATCH_SIZE,
             );
             productsData = data.products;
           } else {
@@ -701,7 +701,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
               this.collectionHandle,
               filters,
               cursor,
-              BATCH_SIZE
+              BATCH_SIZE,
             );
             productsData = data.collection?.products;
           }
@@ -716,7 +716,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           if (clientSideFilterParams && this.isSearchMode) {
             pageProducts = this.applyClientSideFilters(pageProducts, clientSideFilterParams);
             this.debugLog(
-              `🟡 CollectionGroupingEnhancer: Applied client-side filters, ${pageProducts.length} products remaining`
+              `🟡 CollectionGroupingEnhancer: Applied client-side filters, ${pageProducts.length} products remaining`,
             );
           }
 
@@ -724,7 +724,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           if (this.isSearchMode && this.searchTerms) {
             pageProducts = this.sortByRelevance(pageProducts, this.searchTerms);
             this.debugLog(
-              `🟢 CollectionGroupingEnhancer: Sorted ${pageProducts.length} products by relevance`
+              `🟢 CollectionGroupingEnhancer: Sorted ${pageProducts.length} products by relevance`,
             );
           }
 
@@ -743,7 +743,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           totalFetched += pageProducts.length;
 
           this.debugLog(
-            `🟢 Progressive: Fetched ${pageProducts.length} products (total: ${totalFetched})`
+            `🟢 Progressive: Fetched ${pageProducts.length} products (total: ${totalFetched})`,
           );
 
           // Group this batch incrementally
@@ -762,7 +762,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
               grid.style.display = '';
             }
             this.debugLog(
-              `🟢 Progressive: Rendered ${newGrouped.length} items, grid went from ${beforeCount} to ${afterCount} children`
+              `🟢 Progressive: Rendered ${newGrouped.length} items, grid went from ${beforeCount} to ${afterCount} children`,
             );
 
             if (afterCount === beforeCount) {
@@ -814,7 +814,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
 
       this.debugLog(
         '🔵 CollectionGroupingEnhancer: Applying client-side filters:',
-        JSON.stringify(filterParams)
+        JSON.stringify(filterParams),
       );
       this.debugLog(`🔵 CollectionGroupingEnhancer: Products to filter: ${products.length}`);
 
@@ -1264,7 +1264,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           // Render group if ready (only if we have 2+ products and not already rendered)
           // CRITICAL: Only mark products as rendered that are actually in this batch being processed
           const productsInThisBatch = existingGroup.allProducts.filter((p) =>
-            newProducts.some((np) => np.id === p.id)
+            newProducts.some((np) => np.id === p.id),
           );
 
           // Only render if at least one product from this batch is in the group
@@ -1311,7 +1311,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
 
       if (newProducts.length > 0 && itemsToRender.length === 0) {
         this.debugLog(
-          `🔴 CRITICAL: Processed ${newProducts.length} products but 0 items to render! Skipped ${skippedCount} already rendered.`
+          `🔴 CRITICAL: Processed ${newProducts.length} products but 0 items to render! Skipped ${skippedCount} already rendered.`,
         );
       }
 
@@ -1324,7 +1324,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
     async renderProductsBatch(grid, items, batchSize) {
       this.debugLog(
         `🟢 renderProductsBatch: Starting with ${items.length} items, batchSize: ${batchSize}, grid:`,
-        grid
+        grid,
       );
       const batches = [];
       for (let i = 0; i < items.length; i += batchSize) {
@@ -1339,7 +1339,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         let cardsAdded = 0;
 
         this.debugLog(
-          `🟢 renderProductsBatch: Processing batch ${batchIndex + 1}/${batches.length} with ${batch.length} items`
+          `🟢 renderProductsBatch: Processing batch ${batchIndex + 1}/${batches.length} with ${batch.length} items`,
         );
 
         for (const item of batch) {
@@ -1351,7 +1351,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
             } else {
               this.debugLog(
                 '🔴 renderProductsBatch: fetchCard returned no cardElement for item:',
-                item
+                item,
               );
             }
           } catch (error) {
@@ -1361,7 +1361,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         }
 
         this.debugLog(
-          `🟢 renderProductsBatch: Batch ${batchIndex + 1} - created ${cardsAdded} cards in fragment, grid currently has ${grid.children.length} children`
+          `🟢 renderProductsBatch: Batch ${batchIndex + 1} - created ${cardsAdded} cards in fragment, grid currently has ${grid.children.length} children`,
         );
 
         // Append batch to grid
@@ -1370,12 +1370,12 @@ if (!customElements.get('collection-grouping-enhancer')) {
         const afterAppend = grid.children.length;
 
         this.debugLog(
-          `🟢 renderProductsBatch: After append - grid went from ${beforeAppend} to ${afterAppend} children (added ${afterAppend - beforeAppend})`
+          `🟢 renderProductsBatch: After append - grid went from ${beforeAppend} to ${afterAppend} children (added ${afterAppend - beforeAppend})`,
         );
 
         if (afterAppend === beforeAppend && cardsAdded > 0) {
           this.debugLog(
-            '🔴 renderProductsBatch: CRITICAL - Fragment had cards but grid children count did not increase!'
+            '🔴 renderProductsBatch: CRITICAL - Fragment had cards but grid children count did not increase!',
           );
           this.debugLog('🔴 renderProductsBatch: Grid element:', grid);
           this.debugLog('🔴 renderProductsBatch: Fragment children:', fragment.children.length);
@@ -1388,7 +1388,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       }
 
       this.debugLog(
-        `🟢 renderProductsBatch: Complete! Grid now has ${grid.children.length} total children`
+        `🟢 renderProductsBatch: Complete! Grid now has ${grid.children.length} total children`,
       );
     }
 
@@ -1405,14 +1405,14 @@ if (!customElements.get('collection-grouping-enhancer')) {
         `🟢 CollectionGroupingEnhancer: fetchAllProducts() called for ${mode}:`,
         identifier,
         'with filters:',
-        filters
+        filters,
       );
 
       // This method may not be used anymore (replaced by loadProductsProgressively)
       // But if it is, it needs to support search mode
       if (this.isSearchMode) {
         window.themeLogger?.warn(
-          '🟡 CollectionGroupingEnhancer: fetchAllProducts() called in search mode - consider using loadProductsProgressively() instead'
+          '🟡 CollectionGroupingEnhancer: fetchAllProducts() called in search mode - consider using loadProductsProgressively() instead',
         );
       }
       const allProducts = [];
@@ -1426,7 +1426,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         pageCount++;
         window.themeLogger?.log(
           `🟢 CollectionGroupingEnhancer: Fetching page ${pageCount}, cursor:`,
-          cursor ? 'exists' : 'null'
+          cursor ? 'exists' : 'null',
         );
 
         try {
@@ -1434,7 +1434,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
             this.collectionHandle,
             filters, // Use provided filters
             cursor,
-            limit
+            limit,
           );
 
           window.themeLogger?.log('🟢 CollectionGroupingEnhancer: API response received:', {
@@ -1445,7 +1445,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
 
           if (!data.collection || !data.collection.products) {
             window.themeLogger?.log(
-              '🟢 CollectionGroupingEnhancer: No collection or products in response, breaking'
+              '🟢 CollectionGroupingEnhancer: No collection or products in response, breaking',
             );
             break;
           }
@@ -1454,7 +1454,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
           const pageProducts = data.collection.products.edges.map((edge) => edge.node);
           allProducts.push(...pageProducts);
           window.themeLogger?.log(
-            `🟢 CollectionGroupingEnhancer: Added ${pageProducts.length} products from page ${pageCount}, total: ${allProducts.length}`
+            `🟢 CollectionGroupingEnhancer: Added ${pageProducts.length} products from page ${pageCount}, total: ${allProducts.length}`,
           );
 
           // Check if there are more pages
@@ -1464,7 +1464,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         } catch (error) {
           window.themeLogger?.error(
             '🔴 CollectionGroupingEnhancer: Error fetching products:',
-            error
+            error,
           );
           window.themeLogger?.error('🔴 CollectionGroupingEnhancer: Error stack:', error.stack);
           break;
@@ -1473,7 +1473,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
 
       window.themeLogger?.log(
         '🟢 CollectionGroupingEnhancer: fetchAllProducts() complete, total products:',
-        allProducts.length
+        allProducts.length,
       );
       return allProducts;
     }
@@ -1494,7 +1494,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       window.themeLogger?.log(
         '🟡 CollectionGroupingEnhancer: groupAllProducts() called with',
         products.length,
-        'products'
+        'products',
       );
       const singleProducts = [];
 
@@ -1660,7 +1660,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
     async renderGroupedProducts(groupedData) {
       const renderStartTime = Date.now();
       const existingGrid = document.querySelector(
-        '.main-products-grid__results ul, .main-products-grid__results .products-grid-container ul'
+        '.main-products-grid__results ul, .main-products-grid__results .products-grid-container ul',
       );
       if (!existingGrid) {
         window.themeLogger?.error('🔴 CollectionGroupingEnhancer: Could not find product grid');
@@ -1672,7 +1672,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         groupedData.groups.length,
         'groups and',
         groupedData.singles.length,
-        'singles'
+        'singles',
       );
 
       // Store original grid classes and attributes to preserve them
@@ -1684,11 +1684,11 @@ if (!customElements.get('collection-grouping-enhancer')) {
 
       window.themeLogger?.log(
         '🟣 CollectionGroupingEnhancer: Original grid classes:',
-        originalGridClasses
+        originalGridClasses,
       );
       window.themeLogger?.log(
         '🟣 CollectionGroupingEnhancer: Original grid attributes:',
-        originalGridAttributes
+        originalGridAttributes,
       );
 
       // Clear grid content but preserve the grid element structure
@@ -1755,11 +1755,11 @@ if (!customElements.get('collection-grouping-enhancer')) {
       const fetchPromises = allItems;
 
       window.themeLogger?.log(
-        '🟣 CollectionGroupingEnhancer: Implementing virtual scrolling with progressive rendering'
+        '🟣 CollectionGroupingEnhancer: Implementing virtual scrolling with progressive rendering',
       );
       window.themeLogger?.log(
         '🟣 CollectionGroupingEnhancer: Total cards to render:',
-        fetchPromises.length
+        fetchPromises.length,
       );
 
       // VIRTUAL SCROLLING + PROGRESSIVE RENDERING STRATEGY:
@@ -1801,24 +1801,24 @@ if (!customElements.get('collection-grouping-enhancer')) {
       window.themeLogger?.log('🟣 CollectionGroupingEnhancer: Grid children count:', gridChildren);
       window.themeLogger?.log(
         '🟣 CollectionGroupingEnhancer: Grid visible?',
-        existingGrid.offsetParent !== null
+        existingGrid.offsetParent !== null,
       );
       window.themeLogger?.log(
         '🟣 CollectionGroupingEnhancer: Grid display:',
-        window.getComputedStyle(existingGrid).display
+        window.getComputedStyle(existingGrid).display,
       );
 
       if (gridChildren === 0 && this.renderedCount > 0) {
         window.themeLogger?.error(
-          '🔴 CollectionGroupingEnhancer: CRITICAL - Cards were counted but not added to grid!'
+          '🔴 CollectionGroupingEnhancer: CRITICAL - Cards were counted but not added to grid!',
         );
         window.themeLogger?.error(
-          '🔴 CollectionGroupingEnhancer: Grid selector might be wrong or grid was cleared'
+          '🔴 CollectionGroupingEnhancer: Grid selector might be wrong or grid was cleared',
         );
       }
 
       window.themeLogger?.log(
-        '🟣 CollectionGroupingEnhancer: Virtual scrolling active - remaining cards will load on scroll'
+        '🟣 CollectionGroupingEnhancer: Virtual scrolling active - remaining cards will load on scroll',
       );
 
       // Reinitialize components after initial render
@@ -1832,7 +1832,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       const amount = parseFloat(priceObj.amount || 0);
       const currency = priceObj.currencyCode || 'GBP';
       return new Intl.NumberFormat('en-GB', { style: 'currency', currency: currency }).format(
-        amount
+        amount,
       );
     }
 
@@ -1853,7 +1853,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       const batch = this.allFetchPromises.slice(startIndex, endIndex);
 
       this.debugLog(
-        `🟣 CollectionGroupingEnhancer: Rendering batch ${startIndex}-${endIndex} (${batch.length} cards)...`
+        `🟣 CollectionGroupingEnhancer: Rendering batch ${startIndex}-${endIndex} (${batch.length} cards)...`,
       );
 
       // Fetch cards in smaller sub-batches to avoid overwhelming browser
@@ -1861,7 +1861,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       for (let i = 0; i < batch.length; i += batchFetchSize) {
         const subBatch = batch.slice(i, i + batchFetchSize);
         const subBatchResults = await Promise.allSettled(
-          subBatch.map((item) => this.fetchCard(item))
+          subBatch.map((item) => this.fetchCard(item)),
         );
 
         // Render ONLY the new sub-batch results (not all results to avoid duplicates)
@@ -1910,7 +1910,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
         if (!cardElement) {
           this.debugLog(
             '🔴 fetchCard: renderCardFromData returned null/undefined for product:',
-            product.handle
+            product.handle,
           );
           return null;
         }
@@ -1922,7 +1922,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
 
         this.debugLog(
           `🟢 fetchCard: Successfully created card element (${cardElement.nodeName}) for product:`,
-          product.handle
+          product.handle,
         );
 
         return { ...item, cardElement };
@@ -2246,17 +2246,17 @@ if (!customElements.get('collection-grouping-enhancer')) {
       const cardHTML = `
         <product-card class="${cardClasses}" data-group-size="${groupSize}">
           ${
-            isGroup
-              ? `
+  isGroup
+    ? `
             <div class="card__group-indicator absolute top-2 right-2 text-xs px-2 py-1 rounded-full z-10">
               ${groupSize + 1} copies available
             </div>
           `
-              : ''
-          }
+    : ''
+}
           ${
-            enableCompare
-              ? `
+  enableCompare
+    ? `
             <div class="card__compare no-js-hidden text-sm">
               <input type="checkbox" class="checkbox checkbox--compare js-compare-checkbox" 
                      id="compare-${product.id}" 
@@ -2265,15 +2265,15 @@ if (!customElements.get('collection-grouping-enhancer')) {
               <label for="compare-${product.id}">Compare</label>
             </div>
           `
-              : ''
-          }
+    : ''
+}
           <div class="card__media relative">
             <a href="${productUrl}" aria-label="${this.escapeHtml(product.title)}" 
                class="media block relative js-prod-link" 
                style="padding-top: 100%;" tabindex="-1">
               ${
-                imageUrl
-                  ? `
+  imageUrl
+    ? `
                 <img src="${imageUrl}&width=460" 
                      alt="${this.escapeHtml(imageAlt)}"
                      class="img-fit card__main-image"
@@ -2281,109 +2281,109 @@ if (!customElements.get('collection-grouping-enhancer')) {
                      width="460"
                      height="460">
               `
-                  : `
+    : `
                 <div class="media__placeholder img-fit">No image</div>
               `
-              }
+}
             </a>
           </div>
           <div class="card__info-container flex flex-col flex-auto relative">
             <div class="card__info w-full">
               <div class="card__info-inner ${infoInnerClass} w-full">
                 ${
-                  vendor
-                    ? `
+  vendor
+    ? `
                   <p class="card__vendor${this.showDividers ? ' mb-1' : ' mb-0'} text-sm text-theme-light">${this.escapeHtml(vendor)}</p>
                 `
-                    : ''
-                }
+    : ''
+}
                 <p class="card__title font-bold${this.showDividers ? ' mb-1' : ' mt-1 mb-0'}">
                   <a href="${productUrl}" class="card-link text-current js-prod-link">
                     ${this.escapeHtml(cleanTitle)}${displayFormat ? ` <span> - ${this.escapeHtml(displayFormat)}</span>` : ''}${!isGroup && gradeCondition ? ` <span style="font-weight: bold; font-style: italic;"> - ${this.escapeHtml(gradeCondition)}</span>` : ''}
                   </a>
                 </p>
                 ${
-                  isGroup
-                    ? `
+  isGroup
+    ? `
                   <p class="card__group-info text-xs text-theme-light mb-1">
                     ${groupSize + 1} copies available.
                   </p>
                 `
-                    : ''
-                }
+    : ''
+}
                 ${
-                  !this.cardPriceBottom
-                    ? `
+  !this.cardPriceBottom
+    ? `
                   <div class="price ${priceClass}">
                     <div class="price__default">
                       ${
-                        showFromPrice
-                          ? `
+  showFromPrice
+    ? `
                         <span class="price__current">
                           <span class="price__from">${fromText}</span>
                           <span class="js-value">${this.formatPrice({ amount: lowestPrice, currencyCode: currency })}</span>
                         </span>
                       `
-                          : isOnSale
-                            ? `
+    : isOnSale
+      ? `
                         <span class="price__current">
                           <span class="price__sale">${this.formatPrice({ amount: price, currencyCode: currency })}</span>
                           <span class="price__compare">${this.formatPrice({ amount: comparePrice, currencyCode: currency })}</span>
                         </span>
                       `
-                            : `
+      : `
                         <span class="price__current">
                           <span class="js-value">${this.formatPrice({ amount: price, currencyCode: currency })}</span>
                         </span>
                       `
-                      }
+}
                     </div>
                   </div>
                 `
-                    : ''
-                }
+    : ''
+}
               </div>
             </div>
             ${
-              this.cardPriceBottom
-                ? `
+  this.cardPriceBottom
+    ? `
               <div class="mt-auto">
                 <div class="price ${priceClass}">
                   <div class="price__default">
                     ${
-                      showFromPrice
-                        ? `
+  showFromPrice
+    ? `
                       <span class="price__current">
                         <span class="price__from">${fromText}</span>
                         <span class="js-value">${this.formatPrice({ amount: lowestPrice, currencyCode: currency })}</span>
                       </span>
                     `
-                        : isOnSale
-                          ? `
+    : isOnSale
+      ? `
                       <span class="price__current">
                         <span class="price__sale">${this.formatPrice({ amount: price, currencyCode: currency })}</span>
                         <span class="price__compare">${this.formatPrice({ amount: comparePrice, currencyCode: currency })}</span>
                       </span>
                     `
-                          : `
+      : `
                       <span class="price__current">
                         <span class="js-value">${this.formatPrice({ amount: price, currencyCode: currency })}</span>
                       </span>
                     `
-                    }
+}
                   </div>
                 </div>
               </div>
             `
-                : ''
-            }
+    : ''
+}
             ${
-              !productNotForSale
-                ? `
+  !productNotForSale
+    ? `
               <div class="card__actions">
                 ${
-                  groupSize > 0
-                    ? `
+  groupSize > 0
+    ? `
                   <div class="no-js-hidden">
                     <button type="button"
                             class="btn btn--primary w-full js-quick-add btn--select-copy"
@@ -2404,8 +2404,8 @@ if (!customElements.get('collection-grouping-enhancer')) {
                     </a>
                   </div>
                 `
-                    : hasOnlyDefaultVariant && this.enableQuickAdd
-                      ? `
+    : hasOnlyDefaultVariant && this.enableQuickAdd
+      ? `
                   <product-form class="product-form">
                     <form action="/cart/add" method="post" enctype="multipart/form-data" id="${productFormId}" class="form" novalidate="novalidate" data-type="add-to-cart-form">
                       <input type="hidden" name="id" value="${variantId}">
@@ -2428,7 +2428,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
                     </form>
                   </product-form>
                 `
-                      : `
+      : `
                   <div class="no-js-hidden">
                     <button type="button"
                             class="btn btn--primary w-full js-quick-add"
@@ -2449,11 +2449,11 @@ if (!customElements.get('collection-grouping-enhancer')) {
                     </a>
                   </div>
                 `
-                }
+}
               </div>
             `
-                : ''
-            }
+    : ''
+}
           </div>
         </product-card>
       `;
@@ -2496,7 +2496,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
       }
 
       window.themeLogger?.log(
-        `🟣 CollectionGroupingEnhancer: Added ${addedCount} cards to grid. Grid now has ${grid.children.length} children.`
+        `🟣 CollectionGroupingEnhancer: Added ${addedCount} cards to grid. Grid now has ${grid.children.length} children.`,
       );
 
       // Reinitialize components after rendering (only if we've rendered new cards)
@@ -2538,7 +2538,7 @@ if (!customElements.get('collection-grouping-enhancer')) {
             }
           }
         },
-        { rootMargin: '200px' } // Start loading 200px before sentinel is visible
+        { rootMargin: '200px' }, // Start loading 200px before sentinel is visible
       );
 
       observer.observe(sentinel);

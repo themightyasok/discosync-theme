@@ -10,10 +10,9 @@ module.exports = {
     'prettier --write',
   ],
   
-          // Liquid template files - format with Prettier (Theme Check runs separately)
-          '**/*.liquid': [
-            'prettier --write',
-          ],
+  // Liquid template files - skip Prettier (doesn't support Liquid syntax well)
+  // Theme Check runs separately via lint:liquid
+  '**/*.liquid': () => [],
   
   // JSON files - format with Prettier
   '**/*.json': [

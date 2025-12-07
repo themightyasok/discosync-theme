@@ -74,12 +74,12 @@ class PerformanceReporter {
       // Navigation Timing
       navigation: perfData
         ? {
-            domContentLoaded:
+          domContentLoaded:
               perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
-            loadComplete: perfData.loadEventEnd - perfData.loadEventStart,
-            domInteractive: perfData.domInteractive - perfData.domContentLoadedEventStart,
-            totalTime: perfData.loadEventEnd - perfData.fetchStart,
-          }
+          loadComplete: perfData.loadEventEnd - perfData.loadEventStart,
+          domInteractive: perfData.domInteractive - perfData.domContentLoadedEventStart,
+          totalTime: perfData.loadEventEnd - perfData.fetchStart,
+        }
         : null,
 
       // Paint Timing

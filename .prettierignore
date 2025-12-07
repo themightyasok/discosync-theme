@@ -6,4 +6,6 @@ assets/chunks/
 daddypop/
 *.min.js
 *.min.css
+# Liquid files - Prettier doesn't support Liquid syntax
+**/*.liquid
 

@@ -180,10 +180,10 @@ if (!customElements.get('predictive-search')) {
      */
     handleResultsNav(key) {
       const selectedResult = this.querySelector(
-        '[role="tabpanel"]:not([hidden]) [aria-selected="true"]'
+        '[role="tabpanel"]:not([hidden]) [aria-selected="true"]',
       );
       const allResults = this.querySelectorAll(
-        '[role="tabpanel"]:not([hidden]) .predictive-search__item'
+        '[role="tabpanel"]:not([hidden]) .predictive-search__item',
       );
       let resultToSelect = allResults[0];
 

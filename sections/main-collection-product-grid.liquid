@@ -45,154 +45,78 @@
 
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
   {%- paginate collection.products by section.settings.products_per_page -%}
-    {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
-    {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
-      <facet-filters-form class="facets facets-vertical-sort page-width small-hide">
-        <form class="facets-vertical-form" id="FacetSortForm">
-          <div class="facet-filters sorting caption">
-            <div class="facet-filters__field">
-              <h2 class="facet-filters__label caption-large text-body">
-                <label for="SortBy">{{ 'products.facets.sort_by_label' | t }}</label>
-              </h2>
-              <div class="select">
-                {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
-                <select
-                  name="sort_by"
-                  class="facet-filters__sort select__select caption-large"
-                  id="SortBy"
-                  aria-describedby="a11y-refresh-page-message"
-                >
-                  {%- for option in collection.sort_options -%}
-                    <option
-                      value="{{ option.value | escape }}"
-                      {% if option.value == sort_by %}
-                        selected="selected"
-                      {% endif %}
-                    >
-                      {{ option.name | escape }}
-                    </option>
-                  {%- endfor -%}
-                </select>
-                <span class="svg-wrapper">
-                  {{- 'icon-caret.svg' | inline_asset_content -}}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="product-count-vertical light" role="status">
-            <h2 class="product-count__text text-body">
-              <span id="ProductCountDesktop">
-                {%- if collection.results_count -%}
-                  {{
-                    'templates.search.results_with_count'
-                    | t: terms: collection.terms, count: collection.results_count
-                  }}
-                {%- elsif collection.products_count == collection.all_products_count -%}
-                  {{ 'products.facets.product_count_simple' | t: count: collection.products_count }}
-                {%- else -%}
-                  {{
-                    'products.facets.product_count'
-                    | t: product_count: collection.products_count, count: collection.all_products_count
-                  }}
-                {%- endif -%}
-              </span>
-            </h2>
-            {%- render 'loading-spinner' -%}
-          </div>
-        </form>
-      </facet-filters-form>
+    {%- comment -%}Products Toolbar with Filter/Sort buttons{%- endcomment -%}
+    {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
+      {%- liquid
+        assign compare_visible = false
+        if settings.enable_compare and settings.compare_toggle != "none"
+          assign compare_visible = true
+        endif
+      -%}
+      {%- if section.settings.enable_filtering or section.settings.enable_sorting or compare_visible -%}
+        <script src="{{ 'products-toolbar.js' | asset_url }}" defer="defer"></script>
+        {% render 'products-toolbar', results: collection %}
+      {%- endif -%}
     {%- endif -%}
 
-    <div class="{% if section.settings.filter_type == 'vertical' %} facets-vertical page-width{% endif %}">
-      {{ 'component-facets.css' | asset_url | stylesheet_tag }}
-      <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
-      {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
-        <aside
-          aria-labelledby="verticalTitle"
-          class="facets-wrapper{% unless section.settings.enable_filtering %} facets-wrapper--no-filters{% endunless %}{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}"
-          id="main-collection-filters"
-          data-id="{{ section.id }}"
-        >
-          {% render 'facets',
-            results: collection,
-            enable_filtering: section.settings.enable_filtering,
-            enable_sorting: section.settings.enable_sorting,
-            filter_type: section.settings.filter_type,
-            paginate: paginate
-          %}
-        </aside>
+    {%- comment -%}Main Products Grid with Filters and Results{%- endcomment -%}
+    {%- liquid
+      assign grid_classes_filters_open = 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4'
+      assign grid_classes_filters_closed = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+      if section.settings.columns_desktop == 3
+        assign grid_classes_filters_open = 'grid-cols-1 sm:grid-cols-3'
+        assign grid_classes_filters_closed = 'grid-cols-1 sm:grid-cols-3 xl:grid-cols-4'
+      elsif section.settings.columns_desktop == 2
+        assign grid_classes_filters_open = 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+        assign grid_classes_filters_closed = 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+      endif
+    -%}
+
+    <div class="main-products-grid{% if settings.card_contain %} main-products-grid--contained{% endif %} flex" data-layout="grid">
+      {%- if section.settings.enable_filtering and collection.filters != empty -%}
+        <div class="main-products-grid__filters{% if section.settings.filters_open_lg == false %} lg:js-hidden{% endif %}">
+          {% render 'facet-filters', results: collection %}
+        </div>
       {%- endif -%}
 
-      <div
-        class="product-grid-container{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-        id="ProductGridContainer"
-        {% if settings.animations_reveal_on_scroll %}
-          data-cascade
-        {% endif %}
-      >
-        {%- if collection.products.size == 0 -%}
-          <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
-            <div class="loading-overlay gradient"></div>
-            <div class="title-wrapper center">
-              <h2 class="title title--primary">
-                {{ 'sections.collection_template.empty' | t -}}
-                <br>
-                {{
-                  'sections.collection_template.use_fewer_filters_html'
-                  | t: link: collection.url, class: 'underlined-link link'
-                }}
-              </h2>
-            </div>
-          </div>
+      <div class="main-products-grid__results relative flex-auto" id="filter-results">
+        {%- if collection.products.size == 0 and collection.filters != empty -%}
+          <p>{{ 'sections.collection_template.empty' | t }}</p>
         {%- else -%}
-          <div
-            class="collection{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}"
-          >
-            <div class="loading-overlay gradient"></div>
-            <ul
-              id="product-grid"
-              data-id="{{ section.id }}"
-              class="
-                grid product-grid grid--{{ section.settings.columns_mobile }}-col-tablet-down
-                grid--{{ section.settings.columns_desktop }}-col-desktop
-                {% if section.settings.quick_add == 'bulk' %} collection-quick-add-bulk{% endif %}
-              "
-            >
-              {% assign skip_card_product_styles = false %}
-              {%- for product in collection.products -%}
-                {% assign lazy_load = false %}
-                {%- if forloop.index > 2 -%}
-                  {%- assign lazy_load = true -%}
-                {%- endif -%}
-                <li
-                  class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          <ul class="grid mb-8 md:mb-12 {% if section.settings.filters_open_lg %}{{ grid_classes_filters_open }}{% else %}{{ grid_classes_filters_closed }}{% endif %} gap-x-theme {% if settings.card_contain %}gap-y-5 md:gap-y-8{% else %}gap-y-10{% endif %} js-grouping-hidden"
+              data-filters-open-classes="grid mb-8 md:mb-12 {{ grid_classes_filters_open }} gap-x-theme {% if settings.card_contain %}gap-y-5 md:gap-y-8{% else %}gap-y-10{% endif %}"
+              data-filters-closed-classes="grid mb-8 md:mb-12 {{ grid_classes_filters_closed }} gap-x-theme {% if settings.card_contain %}gap-y-5 md:gap-y-8{% else %}gap-y-10{% endif %}" role="list">
+            {% assign skip_card_product_styles = false %}
+            {%- for product in collection.products -%}
+              {% assign lazy_load = false %}
+              {%- if forloop.index > 2 -%}
+                {%- assign lazy_load = true -%}
+              {%- endif -%}
+              <li class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
                   {% if settings.animations_reveal_on_scroll %}
                     data-cascade
                     style="--animation-order: {{ forloop.index }};"
-                  {% endif %}
-                >
-                  {% render 'card-product',
-                    card_product: product,
-                    media_aspect_ratio: section.settings.image_ratio,
-                    image_shape: section.settings.image_shape,
-                    show_secondary_image: section.settings.show_secondary_image,
-                    show_vendor: section.settings.show_vendor,
-                    show_rating: section.settings.show_rating,
-                    lazy_load: lazy_load,
-                    skip_styles: skip_card_product_styles,
-                    quick_add: section.settings.quick_add,
-                    section_id: section.id
-                  %}
-                </li>
-                {%- assign skip_card_product_styles = true -%}
-              {%- endfor -%}
-            </ul>
+                  {% endif %}>
+                {% render 'card-product',
+                  card_product: product,
+                  media_aspect_ratio: section.settings.image_ratio,
+                  image_shape: section.settings.image_shape,
+                  show_secondary_image: section.settings.show_secondary_image,
+                  show_vendor: section.settings.show_vendor,
+                  show_rating: section.settings.show_rating,
+                  lazy_load: lazy_load,
+                  skip_styles: skip_card_product_styles,
+                  quick_add: section.settings.quick_add,
+                  section_id: section.id
+                %}
+              </li>
+              {%- assign skip_card_product_styles = true -%}
+            {%- endfor -%}
+          </ul>
 
-            {%- if paginate.pages > 1 -%}
-              {% render 'pagination', paginate: paginate, anchor: '' %}
-            {%- endif -%}
-          </div>
+          {%- if paginate.pages > 1 -%}
+            {% render 'pagination', paginate: paginate, anchor: '' %}
+          {%- endif -%}
         {%- endif -%}
       </div>
     </div>
@@ -378,30 +302,44 @@
       "info": "t:sections.main-collection-product-grid.settings.enable_filtering.info"
     },
     {
-      "type": "select",
-      "id": "filter_type",
-      "options": [
-        {
-          "value": "horizontal",
-          "label": "t:sections.main-collection-product-grid.settings.filter_type.options__1.label"
-        },
-        {
-          "value": "vertical",
-          "label": "t:sections.main-collection-product-grid.settings.filter_type.options__2.label"
-        },
-        {
-          "value": "drawer",
-          "label": "t:sections.main-collection-product-grid.settings.filter_type.options__3.label"
-        }
-      ],
-      "default": "horizontal",
-      "label": "t:sections.main-collection-product-grid.settings.filter_type.label"
+      "type": "checkbox",
+      "id": "filters_open_lg",
+      "label": "Open filters by default on large screens",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filter_counts",
+      "label": "Show product counts",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "expand_filters",
+      "label": "Expand all filters by default",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "max_filter_options",
+      "label": "Visible options per filter",
+      "info": "Remaining options will be automatically collapsed.",
+      "min": 2,
+      "max": 50,
+      "step": 1,
+      "default": 7
     },
     {
       "type": "checkbox",
       "id": "enable_sorting",
       "default": true,
       "label": "t:sections.main-collection-product-grid.settings.enable_sorting.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "stick_on_scroll",
+      "label": "Stick on scroll on large screens",
+      "default": true
     },
     {
       "type": "header",
