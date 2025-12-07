@@ -10,10 +10,10 @@ module.exports = {
     'prettier --write',
   ],
   
-  // Liquid template files - run Theme Check (only on changed files)
-  '**/*.liquid': [
-    (filenames) => `npx shopify-theme-check-node ${filenames.join(' ')}`,
-  ],
+          // Liquid template files - format with Prettier (Theme Check runs separately)
+          '**/*.liquid': [
+            'prettier --write',
+          ],
   
   // JSON files - format with Prettier
   '**/*.json': [

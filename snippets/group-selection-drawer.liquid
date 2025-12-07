@@ -1,0 +1,169 @@
+<group-selection-drawer
+  class="drawer group-selection-drawer fixed top-0 right-0 flex flex-col w-full has-motion"
+  data-name="group-selection"
+  role="dialog"
+  tabindex="-1"
+  aria-labelledby="group-selection-heading"
+  aria-modal="true"
+  aria-hidden="true"
+>
+  <script>
+    // Define the custom element if it doesn't exist
+    if (!customElements.get('group-selection-drawer')) {
+      class GroupSelectionDrawer extends HTMLElement {
+        constructor() {
+          super();
+
+          // Bind close button
+          this.addEventListener('click', (e) => {
+            if (e.target.matches('.js-close-drawer')) {
+              this.close();
+            }
+          });
+
+          // Close on overlay click (using Dawn's cart drawer overlay pattern)
+          document.addEventListener('click', (e) => {
+            const overlay = document.querySelector('.cart-drawer__overlay, .js-overlay');
+            if (overlay && e.target === overlay && this.hasAttribute('open')) {
+              this.close();
+            }
+          });
+        }
+
+        open(opener) {
+          this.setAttribute('open', '');
+          this.setAttribute('aria-hidden', 'false');
+
+          // Show overlay (use cart drawer overlay if available, or create one)
+          let overlay = document.querySelector('.cart-drawer__overlay');
+          if (!overlay) {
+            overlay = document.querySelector('.js-overlay');
+            if (overlay) {
+              overlay.classList.add('is-visible');
+            }
+          } else {
+            overlay.style.display = 'block';
+          }
+        }
+
+        close() {
+          this.removeAttribute('open');
+          this.setAttribute('aria-hidden', 'true');
+
+          // Hide overlay
+          let overlay = document.querySelector('.cart-drawer__overlay');
+          if (!overlay) {
+            overlay = document.querySelector('.js-overlay');
+            if (overlay) {
+              overlay.classList.remove('is-visible');
+            }
+          } else {
+            // Don't hide cart drawer overlay if cart drawer is open
+            const cartDrawer = document.querySelector('cart-drawer');
+            if (!cartDrawer || !cartDrawer.classList.contains('active')) {
+              overlay.style.display = 'none';
+            }
+          }
+        }
+      }
+
+      customElements.define('group-selection-drawer', GroupSelectionDrawer);
+    }
+  </script>
+  <header class="drawer__header group-selection__header flex justify-between items-center relative p-4 border-b">
+    <div class="flex-grow">
+      <h2 class="h5 mb-0" id="group-selection-heading">Choose Format / Copy</h2>
+      <p class="text-sm text-theme-light mt-1 js-group-info">Select the format and condition you prefer</p>
+    </div>
+    <button type="button" class="drawer__close-btn js-close-drawer">
+      <span class="visually-hidden">{{ 'accessibility.close' | t }}</span>
+      {% render 'icon-close' %}
+    </button>
+  </header>
+
+  <div class="drawer__content group-selection__content flex-auto relative overflow-y-auto">
+    <div class="js-group-variants p-4">
+      <!-- Group variants will be populated here by JavaScript -->
+    </div>
+  </div>
+</group-selection-drawer>
+
+<style>
+  .group-selection-drawer {
+    max-width: 500px;
+    z-index: 1001;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .group-selection-drawer[open] {
+    transform: translateX(0);
+  }
+
+  .group-variant-item {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: white;
+  }
+
+  .group-variant-item:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .group-variant-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .variant-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--color-foreground);
+  }
+
+  .variant-condition {
+    font-size: 14px;
+    color: var(--color-foreground-75);
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .condition-media,
+  .condition-sleeve {
+    font-size: 13px;
+    margin-bottom: 2px;
+    color: var(--color-foreground-75);
+  }
+
+  .variant-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 8px;
+  }
+
+  .variant-stock {
+    font-size: 12px;
+    color: var(--color-foreground-50);
+    margin-bottom: 12px;
+  }
+
+  .variant-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn--variant {
+    flex: 1;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+</style>
